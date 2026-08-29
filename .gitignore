@@ -1,273 +1,69 @@
 # ============================================
-# KEEP THESE FILE TYPES ONLY
+# 1. IGNORAR TODO EL CONTENIDO (PERO PERMITIR NAVEGAR CARPETAS)
 # ============================================
+/*
+!/
 
-# Python files
+# Permitir que Git entre a cualquier subdirectorio para buscar archivos
+!*/
+
+# ============================================
+# 2. EXCEPCIONES: ARCHIVOS QUE DÉBAS CONSERVAR
+# ============================================
+# Python
 !*.py
 
-# SystemVerilog files
+# SystemVerilog / Verilog / VHDL
 !*.sv
 !*.svh
 !*.v
 !*.vh
+!*.vhd
 
-# Image files
+# Imágenes y Documentación
 !*.png
 !*.jpg
 !*.jpeg
-
-# Markdown files
 !*.md
 !*.markdown
 
-# Constraints files
+# Constraints
 !*.xdc
 !*.sdc
 !*.pdc
 !*.ncf
 !*.ucf
 
-# ============================================
-# IGNORE EVERYTHING ELSE
-# ============================================
+# Carpetas específicas
+!docs/
+!docs/**
+!modulos/
+!modulos/**
 
-# Start by ignoring everything
-*
-
 # ============================================
-# VIVADO SPECIFIC - IGNORE ALL TRASH/CACHE
+# 3. BASURA Y CACHÉ A IGNORAR
 # ============================================
-
-# Vivado project files
-*.xpr
-*.hw
-*.xpr*
-*.xml
-*.prj
-*.rpt
-*.log
-*.jou
-*.str
-*.webtalk
-*.backup.*
-*.tmp
-*.temp
-*.cache
-*.data
-*.db
-*.srcs
-*.ip_user_files
-*.sim
-*.runs
-*.hw
-*.impl
-*.gen
-*.sdk
-*.bd
-*.wcfg
-*.wdb
-*.wh
-*.svf
-*.zip
-
-# Vivado directories
+# Vivado / Entornos de simulación
 .Xil/
 vivado_*/
-Vivado_*/
+*.log
+*.jou
+*.pb
+*.wcfg
+*.wdb
 .gen/
 .sim/
 .runs/
-.ip_user_files/
-.hw/
-.xsim/
 .cache/
-.prj/
 .srcs/
-.exrc
-.settings/
-dll/
-.exelib/
 
-# ============================================
-# PYTHON SPECIFIC - IGNORE ALL TRASH/CACHE
-# ============================================
-
-# Byte-compiled / optimized / DLL files
+# Entornos virtuales y caché de Python
 __pycache__/
 *.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# PyInstaller
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-pytest-debug.log
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff
-instance/
-.webassets-cache
-
-# Scrapy stuff
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# Jupyter Notebooks
-.ipynb_checkpoints/
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-.python-version
-
-# pipenv
-Pipfile.lock
-poetry.lock
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# ============================================
-# EXCEPTIONS - KEEP PYTHON FILES IN SUBDIRS
-# ============================================
-
-# Keep Python files in any directory
-!*/**.py
-
-# Keep __init__.py files (even if empty)
-!__init__.py
-!*/__init__.py
-
-# Keep specific Python files in root
-!/*.py
-!*.py
-
-# ============================================
-# ADDITIONAL IGNORES
-# ============================================
-
-# IDE files (VSCode, PyCharm, etc.)
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-*.pyproj
-*.sln
-*.suo
-
-# Compiled outputs
-*.o
-*.a
-*.elf
-
-# Simulation files
-*.vcd
-*.vpd
-*.trn
-*.wlf
-*.vst
-*.db
-*.debug
-
-# Synthesis files
-*.edf
-*.ngo
-*.ngc
-*.ngd
-*.ngr
-*.ngm
-*.xst
-*.syr
-*.srp
-
-# Implementation files
-*.twr
-*.twx
-*.twg
-*.drc
-*.bld
-*.bit
-*.mcs
-*.prm
-*.xre
-*.ptx
-
-# Environment files
-.env
-.venv
-venv/
-ENV/
+.venv/
 env/
 
-# README files
-!*.md
-
-# FOLDERS
-!docs/diseno/*
-!docs/informe/*
-!modulos/constraints/*.xdc
-!modulos/pc-app/*.py
-!modulos/src/*.sv
-!modulos/src/*.vhd
-!modulos/tb/*.sv
+# IDEs y SO
+.vscode/
+.idea/
+.DS_Store
