@@ -52,7 +52,7 @@ El módulo `Lfsr` implementa un registro de 6 bits (`OUTPUT_BITS = 6`) utilizand
 
 * **Ecuación de Retroalimentación:**
   El bit de realimentación (`feedback`) se calcula mediante la operación XOR entre los bits más significativos del registro:
-  $$\text{feedback} = \text{lfsr\_reg}[5] \oplus \text{lfsr\_reg}[4]$$
+  $$\text{feedback} = \text{lfsr reg}[5] \oplus \text{lfsr reg}[4]$$
 
 * **Prevención de Estado Nulo:**
   Un LFSR basado en compuertas XOR colapsa permanentemente si entra al estado `6'b000000`. Para evitar esto, ante la señal de reinicio (`rst`), el registro se inicializa en la semilla distinta de cero `6'b000001` (`0x01`).
