@@ -1,6 +1,6 @@
 ## Diagrama de Bloques
 ---
-![[DiagramaBloquesGlobal.png]]
+![Diagrama de Bloques Globa](./Imagenes/DiagramaBloquesGlobal.png)
 
 ## PC App
 ---
@@ -75,8 +75,51 @@ Dado que el banco de palabras en la memoria ROM contiene un máximo de 50 elemen
 
 ---
 
-### UART (Peripheral/Core)
+### Comunicación Serial (UART)
+Para establecer el enlace de comunicación bidireccional entre la FPGA y la PC (a través de la aplicación en Python), el sistema utiliza un periférico UART de 32 bits mapeado a memoria. Este bloque integra los núcleos de transmisión (`UART_tx`) y recepción (`UART_rx`) en VHDL con una interfaz SystemVerilog estandarizada.
 
+#### 1. Módulo Transmisor UART (`UART_tx.vhd`)
+
+El núcleo `UART_tx` realiza la conversión de datos paralelos de 8 bits a una trama serie asíncrona estándar (1 bit de inicio, 8 bits de datos, 1 bit de parada, sin paridad).
+
+* **Generación de Baud Rate (115200 Baudios):**
+  Para un reloj de sistema de 100 MHz, el divisor de reloj se calcula mediante la relación:
+  $$	ext{BAUD\_CLK\_TICKS} = rac{f_{	ext{clk}}}{	ext{Baud Rate}} = rac{100 	imes 10^6 	ext{ Hz}}{115200 	ext{ baud}}  pprox 868.06 \implies 868$$
+
+* **Detección de Pulso y Transmisión:**
+  Un proceso interno (`tx_start_detector`) captura impulsos en la señal `tx_start`. Al detectarse la activación, el dato a transmitir se almacena en el registro `stored_data` y la FSM avanza secuencialmente enviando el bit de *START* (`'0'`), los 8 bits de datos desde el LSB hasta el MSB, y finaliza con el bit de *STOP* (`'1'`). La señal `tx_rdy` notifica la finalización del envío.
+
+---
+
+#### 2. Módulo Receptor UART (`UART_rx.vhd`)
+
+El núcleo `UART_rx` procesa la señal serie de entrada `rx` y la convierte a un formato paralelo de 8 bits empleando un esquema de sobremuestreo por un factor de 16 ($16	imes$).
+
+* **Generación de Reloj de Sobremuestreo ($16	imes$):**
+  El número de ciclos de reloj de 100 MHz por cada pulso del reloj de sobremuestreo se define como:
+  $$	ext{BAUD\_X16\_CLK\_TICKS} = rac{f_{	ext{clk}}}{	ext{Baud Rate} 	imes 16} = rac{100 	imes 10^6 	ext{ Hz}}{115200 	imes 16}  pprox 54.25 \implies 54$$
+
+* **Muestra en el Centro del Bit:**
+  Al detectar la transición a '0' del bit de *START*, la FSM del receptor espera 7 ciclos del reloj de sobremuestreo para posicionar el punto de muestreo exactamente en el centro de la duración del bit. Posteriormente, efectúa lecturas cada 16 pulsos del reloj sobremuestreado para reconstruir el byte completo en `rx_stored_data`. Cuando se valida el bit de *STOP*, se genera un pulso de un ciclo en `rx_data_rdy`.
+
+---
+
+#### 3. Adaptación a la Interfaz de Bus y Comunicación con Python (`uart_sv_wrapper.sv`)
+
+El *wrapper* SystemVerilog expone la interfaz de registros de 32 bits hacia la lógica de control de la FPGA y gestiona la interacción bidireccional con la PC a través de un puerto serie virtual sobre USB.
+
+* **Mapa de Registros Mapeado a Memoria:**
+
+| Dirección (`addr_i[1:0]`) | Registro | Tipo | Descripción |
+| :---: | :---: | :---: | :--- |
+| `2'b00` | **DATOS 0** | R/W | `wdata_i[7:0]`: Byte cargado para transmisión por TX. |
+| `2'b01` | **DATOS 1** | RO | `rdata_o[7:0]`: Último byte recibido por RX. |
+| `2'b10` | **CONTROL** | R/W | `bit 0`: **send** (WC/P) - Dispara TX. Auto-limpiable en fin de TX.<br>`bit 1`: **new_rx** (R/W) - Flag de nuevo dato recibido. |
+
+* **Protocolo de Enlace Bidireccional con Python (`pyserial`):**
+  La comunicación opera de forma bidireccional full-duplex sobre el enlace UART a 115200 baudios:
+  1. **Recepción desde Python (PC $	o$ FPGA):** La aplicación Python envía un carácter en formato ASCII que representa la letra adivinada por el usuario. Cuando el módulo `UART_rx` captura la trama completa, activa `rx_data_rdy`. El *wrapper* almacena el byte en `rx_data` y coloca la bandera `new_rx` en `1`. La FSM principal lee el registro `DATOS 1` y posteriormente escribe un `'0'` en el bit `new_rx` de `CONTROL` para limpiar el flag.
+  2. **Transmisión hacia Python (FPGA $	o$ PC):** La FSM de la FPGA escribe la respuesta (inicio de partida, acierto/error, patrón actualizado de la palabra, intentos restantes o resultado final) en el registro `DATOS 0` y setea el bit `send` (bit 0 del registro `CONTROL`). El *wrapper* emite un pulso en `tx_start_pulse` hacia `UART_tx` e inicia la serialización de la trama. Al terminar el envío, el hardware borra automáticamente el bit `send`.
 ---
 ## Subsistema Periféricos
 ---
