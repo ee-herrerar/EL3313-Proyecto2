@@ -15,14 +15,14 @@ module Random_index #(parameter NUM_WORDS=50)(
 
     always_ff @(posedge clk) begin
         if (rst) begin
-            word_index = 6'd0;
+            word_index <= 6'd0;
         end
         else if (enable) begin
             random_value <= op;
         end
 
         if (op < 50) begin
-            word_index = random_value;
+            word_index <= random_value;
         end
     end
 
