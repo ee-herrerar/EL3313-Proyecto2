@@ -16,7 +16,7 @@ module Uart_mm #(
     input logic write_enable,  // Señal de habilitación de escritura
     input logic [CPU_BITS-1:0]  wdata_i,        // Dato de entrada para escribir en la UART
     output logic [CPU_BITS-1:0] rdata_o,       // Dato de salida leído desde la UART
-    input logic [1:0] addr_i,          // Dirección de la UART (0 para TX, 1 para RX)
+    input logic [1:0] addr_i          // Dirección de la UART (0 para TX, 1 para RX)
 );
 
     // 1. Cables de interconexión con el módulo uart_wrapper
@@ -30,7 +30,7 @@ module Uart_mm #(
     logic       reg_send;         // Registro Control (addr = 2'b10, bit 0): Disparo / Estado TX
     logic       reg_new_rx;       // Registro Control (addr = 2'b10, bit 1): Estado RX
 
-    uart_wrapper #(
+    Uart_wrapper #(
     .SYS_CLK_FREQ (SYS_CLK_FREQ),
     .BAUD_RATE    (BAUD_RATE),
     .DBIT         (DBIT),
