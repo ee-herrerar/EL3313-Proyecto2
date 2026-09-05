@@ -1,22 +1,22 @@
 // Módulo Top Wrapper que conecta Generador de Baudios, RX y TX
-module uart_wrapper #(
-    parameter SYS_CLK_FREQ = 100_000_000, // Frecuencia del reloj del sistema (ej. 100 MHz Basys 3)
-    parameter BAUD_RATE    = 9600,        // Tasa de baudios deseada
-    parameter DBIT         = 8,           // Cantidad de bits de datos (8)
-    parameter SB_TICK      = 16           // Ticks para bit de parada (16 = 1 stop bit)
+module Uart_wrapper #(
+    parameter SYS_CLK_FREQ = 100_000_000,   // Frecuencia del reloj del sistema (ej. 100 MHz Basys 3)
+    parameter BAUD_RATE    = 115_200,       // Tasa de baudios deseada
+    parameter DBIT         = 8,             // Cantidad de bits de datos (8)
+    parameter SB_TICK      = 16             // Ticks para bit de parada (16 = 1 stop bit)
 )(
-    input  logic             clk, reset,
+    input  logic clk, reset,
     
     // Interfaz Física de la UART
-    input  logic             rx,
-    output logic             tx,
+    input  logic rx,
+    output logic tx,
     
     // Interfaz de Control / Usuario
-    input  logic             tx_start,      // Pulso para iniciar transmisión externa
+    input  logic tx_start,      // Pulso para iniciar transmisión externa
     input  logic [DBIT-1:0]  din,           // Dato a transmitir externamente
     output logic [DBIT-1:0]  dout,          // Dato recibido
-    output logic             rx_done_tick,  // Pulso que indica que se recibió un dato
-    output logic             tx_done_tick   // Pulso que indica que se terminó de transmitir
+    output logic rx_done_tick,  // Pulso que indica que se recibió un dato
+    output logic tx_done_tick   // Pulso que indica que se terminó de transmitir
 );
 
     // Señal interna de reloj/sampling

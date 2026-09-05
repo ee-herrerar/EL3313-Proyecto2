@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module uart_wrapper_tb;
+module Uart_wrapper_tb;
 
     // Parámetros para simulación
     parameter SYS_CLK_FREQ = 100_000_000; // 100 MHz
@@ -30,7 +30,7 @@ module uart_wrapper_tb;
     logic [DBIT-1:0]  received_tx_data;
 
     // Instancia del Módulo Top (DUT)
-    uart_wrapper #(
+    Uart_wrapper #(
         .SYS_CLK_FREQ (SYS_CLK_FREQ),
         .BAUD_RATE    (BAUD_RATE),
         .DBIT         (DBIT),

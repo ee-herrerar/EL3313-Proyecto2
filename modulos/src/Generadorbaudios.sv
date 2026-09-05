@@ -1,6 +1,6 @@
 module generador_baudios #(
-    parameter SYS_CLK_FREQ = 100_000_000, // De la Basys
-    parameter BAUD_RATE    = 9600,      // Baud rate
+    parameter SYS_CLK_FREQ = 100_000_000,   // De la Basys
+    parameter BAUD_RATE    = 115_200,       // Baud rate
     parameter OVERSAMPLE   = 16
 )(
     input  logic clk,
