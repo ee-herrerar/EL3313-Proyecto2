@@ -198,7 +198,7 @@ seg[6:0] = {g,f,e,d,c,b,a}, activo en bajo (patron estandar deanodo comun). dp s
 <img width="1280" height="630" alt="WhatsApp Image 2026-09-07 at 3 45 21 PM" src="https://github.com/user-attachments/assets/3e9517b9-213d-44e4-9abf-a0ce508eec2a" />
 Diagrama primer nivel modulo de displays.
 
-<img width="792" height="868" alt="WhatsApp Image 2026-09-07 at 4 33 52 PM" src="https://github.com/user-attachments/assets/3a2b81a6-8f41-40d9-af5b-09e8561c9397" />
+<img width="692" height="868" alt="WhatsApp Image 2026-09-07 at 4 33 52 PM" src="https://github.com/user-attachments/assets/3a2b81a6-8f41-40d9-af5b-09e8561c9397" />
 Diagrama segundo nivel modulo de displays.
 
 ### Sonido Y LEDs
