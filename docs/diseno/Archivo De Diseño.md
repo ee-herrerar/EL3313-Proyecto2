@@ -1,8 +1,25 @@
 ## Diagrama de Bloques
 ---
-![Diagrama de Bloques Global](./Imagenes/DiagramaBloquesGlobal.png)
+### Diagrama de primer nivel
+<p align="center">
+  <img src="./Imagenes/DiagramaNivel-N1.svg" alt="Diagrama de Bloques de Primer Nivel" width="75%" />
+</p>
+
+### Diagrama de Segundo Nivel
+
+<p align="center">
+  <img src="./Imagenes/DiagramaNivel-N2.svg" alt="Diagrama de Bloques de Segundo Nivel" width="75%" />
+</p>
+
+### Diagrama de Tercer Nivel
+
+<p align="center">
+  <img src="./Imagenes/DiagramaNivel-N3.svg" alt="Diagrama de Bloques de Tercer Nivel" width="75%" />
+</p>
+
 
 ## PC App
+
 ---
 El PC App es el encargado de recibir los inputs directos del jugador, en este caso la letra seleccionada, validar que esta sea una entrada permitida y enviarla a la FPGA mediante la conexión física y el sistema de comunicación UART. Una vez recibida, la letra es procesada por la FPGA para aplicar la lógica correspondiente del juego. La aplicación también recibe desde la FPGA información sobre el estado de la partida y la muestra al jugador. Este programa se desarrollará exclusivamente en el lenguaje de programación Python.
 ## Subsistema de Juego
@@ -115,7 +132,9 @@ El núcleo `UART_tx` realiza la conversión de datos paralelos de 8 bits a una t
 
 * **Generación de Baud Rate (115200 Baudios):**
   Para un reloj de sistema de 100 MHz, el divisor de reloj se calcula mediante la relación:
-  $$	ext{BAUD\_CLK\_TICKS} = rac{f_{	ext{clk}}}{	ext{Baud Rate}} = rac{100 	imes 10^6 	ext{ Hz}}{115200 	ext{ baud}}  pprox 868.06 \implies 868$$
+  <!--
+  $$	ext{BAUD CLK TICKS} = rac{f_{	ext{clk}}}{	ext{Baud Rate}} = rac{100 	imes 10^6 	ext{ Hz}}{115200 	ext{ baud}}  pprox 868.06 -> 868$$
+  -->
 
 * **Detección de Pulso y Transmisión:**
   Un proceso interno (`tx_start_detector`) captura impulsos en la señal `tx_start`. Al detectarse la activación, el dato a transmitir se almacena en el registro `stored_data` y la FSM avanza secuencialmente enviando el bit de *START* (`'0'`), los 8 bits de datos desde el LSB hasta el MSB, y finaliza con el bit de *STOP* (`'1'`). La señal `tx_rdy` notifica la finalización del envío.
@@ -124,12 +143,15 @@ El núcleo `UART_tx` realiza la conversión de datos paralelos de 8 bits a una t
 
 #### 2. Módulo Receptor UART (`UART_rx.vhd`)
 
-El núcleo `UART_rx` procesa la señal serie de entrada `rx` y la convierte a un formato paralelo de 8 bits empleando un esquema de sobremuestreo por un factor de 16 ($16	imes$).
+El núcleo `UART_rx` procesa la señal serie de entrada `rx` y la convierte a un formato paralelo de 8 bits empleando un esquema de sobremuestreo por un factor de 16 ($16\times$).
 
-* **Generación de Reloj de Sobremuestreo ($16	imes$):**
+* **Generación de Reloj de Sobremuestreo ($16\times$):**
   El número de ciclos de reloj de 100 MHz por cada pulso del reloj de sobremuestreo se define como:
-  $$	ext{BAUD\_X16\_CLK\_TICKS} = rac{f_{	ext{clk}}}{	ext{Baud Rate} 	imes 16} = rac{100 	imes 10^6 	ext{ Hz}}{115200 	imes 16}  pprox 54.25 \implies 54$$
-
+   <!-- 
+   $$	ext{BAUD\_X16\_CLK\_TICKS} = rac{f_{	ext{clk}}}{	ext{Baud Rate} 	imes 16} = rac{100 	imes 10^6 	ext{ Hz}}{115200 	imes 16}  pprox 54.25 \implies 54$$
+  -->
+  
+$$\text{BAUD\_X16\_CLK\_TICKS} = \frac{f_{\text{clk}}}{\text{Baud Rate} \times 16} = \frac{100 \times 10^6 \text{ Hz}}{115200 \times 16} \approx 54.25 \implies 54$$
 * **Muestra en el Centro del Bit:**
   Al detectar la transición a '0' del bit de *START*, la FSM del receptor espera 7 ciclos del reloj de sobremuestreo para posicionar el punto de muestreo exactamente en el centro de la duración del bit. Posteriormente, efectúa lecturas cada 16 pulsos del reloj sobremuestreado para reconstruir el byte completo en `rx_stored_data`. Cuando se valida el bit de *STOP*, se genera un pulso de un ciclo en `rx_data_rdy`.
 
@@ -149,8 +171,8 @@ El *wrapper* SystemVerilog expone la interfaz de registros de 32 bits hacia la l
 
 * **Protocolo de Enlace Bidireccional con Python (`pyserial`):**
   La comunicación opera de forma bidireccional full-duplex sobre el enlace UART a 115200 baudios:
-  1. **Recepción desde Python (PC $	o$ FPGA):** La aplicación Python envía un carácter en formato ASCII que representa la letra adivinada por el usuario. Cuando el módulo `UART_rx` captura la trama completa, activa `rx_data_rdy`. El *wrapper* almacena el byte en `rx_data` y coloca la bandera `new_rx` en `1`. La FSM principal lee el registro `DATOS 1` y posteriormente escribe un `'0'` en el bit `new_rx` de `CONTROL` para limpiar el flag.
-  2. **Transmisión hacia Python (FPGA $	o$ PC):** La FSM de la FPGA escribe la respuesta (inicio de partida, acierto/error, patrón actualizado de la palabra, intentos restantes o resultado final) en el registro `DATOS 0` y setea el bit `send` (bit 0 del registro `CONTROL`). El *wrapper* emite un pulso en `tx_start_pulse` hacia `UART_tx` e inicia la serialización de la trama. Al terminar el envío, el hardware borra automáticamente el bit `send`.
+  1. **Recepción desde Python (PC $\to$ FPGA):** La aplicación Python envía un carácter en formato ASCII que representa la letra adivinada por el usuario. Cuando el módulo `UART_rx` captura la trama completa, activa `rx_data_rdy`. El *wrapper* almacena el byte en `rx_data` y coloca la bandera `new_rx` en `1`. La FSM principal lee el registro `DATOS 1` y posteriormente escribe un `'0'` en el bit `new_rx` de `CONTROL` para limpiar el flag.
+  2. **Transmisión hacia Python (FPGA $\to$ PC):** La FSM de la FPGA escribe la respuesta (inicio de partida, acierto/error, patrón actualizado de la palabra, intentos restantes o resultado final) en el registro `DATOS 0` y setea el bit `send` (bit 0 del registro `CONTROL`). El *wrapper* emite un pulso en `tx_start_pulse` hacia `UART_tx` e inicia la serialización de la trama. Al terminar el envío, el hardware borra automáticamente el bit `send`.
 ---
 #### UART Periférico
 Este módulo se encarga de gestionar la comunicación bidireccional entre la FPGA y la aplicación ejecutada en la PC. Para esto utiliza el núcleo UART TX/RX proporcionado y expone una interfaz de registros hacia la lógica del juego. El periférico permite recibir las letras enviadas desde la PC y transmitir hacia esta la información correspondiente al estado de la partida.
@@ -158,7 +180,6 @@ Este módulo se encarga de gestionar la comunicación bidireccional entre la FPG
 ## Subsistema Periféricos
 ---
 ---
-
 
 ### Displays 7 Segmentos
 
