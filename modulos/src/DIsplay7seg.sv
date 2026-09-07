@@ -1,118 +1,77 @@
-module Display7Seg (
+module seven_seg_mux #(
+    parameter integer CLK_FREQ_HZ    = 100_000_000,
+    parameter integer REFRESH_HZ     = 1000          // refresco por digito
+)(
     input  logic       clk,
-    input  logic       RESET,
-
-    input  logic [6:0] AciertosTotales,
-    input  logic [6:0] FallosTotales,
-
+    input  logic       rst,
+    input  logic [3:0] time_tens,
+    input  logic [3:0] time_ones,
+    input  logic [3:0] wins_tens,
+    input  logic [3:0] wins_ones,
     output logic [6:0] seg,
-    output logic [3:0] an,
-    output logic       dp
+    output logic       dp,
+    output logic [3:0] an
 );
-
-    logic [16:0] ContadorRefresh;
-    logic [1:0]  SelectorDisplay;
-
-    logic [3:0] AciertosDecenas;
-    logic [3:0] AciertosUnidades;
-
-    logic [3:0] FallosDecenas;
-    logic [3:0] FallosUnidades;
-
-    logic [3:0] DigitoActual;
-
-    // Conversión a BCD
-
-    always_comb begin
-
-        AciertosDecenas  = AciertosTotales / 10;
-        AciertosUnidades = AciertosTotales % 10;
-
-        FallosDecenas    = FallosTotales / 10;
-        FallosUnidades   = FallosTotales % 10;
-
-    end
-
-  
-    // Contador de multiplexación
+ 
+    // divisor de reloj: genera un pulso de habilitacion (clockenable) cada vez que toca cambiar de digito 
     
-
+    localparam integer TICKS_PER_DIGIT = CLK_FREQ_HZ / REFRESH_HZ;
+    localparam integer TICK_WIDTH      = $clog2(TICKS_PER_DIGIT);
+ 
+    logic [TICK_WIDTH-1:0] tick_cnt;
+    logic                  tick_en;
+ 
     always_ff @(posedge clk) begin
-
-        if (RESET)
-            ContadorRefresh <= '0;
-        else
-            ContadorRefresh <= ContadorRefresh + 1'b1;
-
+        if (rst) begin
+            tick_cnt <= '0;
+        end else if (tick_cnt == TICKS_PER_DIGIT - 1) begin
+            tick_cnt <= '0;
+        end else begin
+            tick_cnt <= tick_cnt + 1'b1;
+        end
     end
-
-    assign SelectorDisplay = ContadorRefresh[16:15];
-
-  
-    // Selección de display
-    
-
+ 
+    assign tick_en = (tick_cnt == TICKS_PER_DIGIT - 1);
+ 
+    // ---- selector de digito activo (0..3), avanza con clock enable ----
+    logic [1:0] digit_sel;
+ 
+    always_ff @(posedge clk) begin
+        if (rst)
+            digit_sel <= 2'd0;
+        else if (tick_en)
+            digit_sel <= digit_sel + 1'b1;
+    end
+ 
+    // ---- mux del valor BCD y del anodo activo segun digit_sel ----
+    logic [3:0] bcd_value;
+ 
     always_comb begin
-
-        an           = 4'b1111;
-        DigitoActual = 4'd0;
-
-        case (SelectorDisplay)
-
-            // AN0 = unidades fallos
-            2'b00: begin
-                an           = 4'b1110;
-                DigitoActual = FallosUnidades;
-            end
-
-            // AN1 = decenas fallos
-            2'b01: begin
-                an           = 4'b1101;
-                DigitoActual = FallosDecenas;
-            end
-
-            // AN2 = unidades aciertos
-            2'b10: begin
-                an           = 4'b1011;
-                DigitoActual = AciertosUnidades;
-            end
-
-            // AN3 = decenas aciertos
-            2'b11: begin
-                an           = 4'b0111;
-                DigitoActual = AciertosDecenas;
-            end
-
-            default: begin
-                an           = 4'b1111;
-                DigitoActual = 4'd0;
-            end
-
+        unique case (digit_sel)
+            2'd0: begin bcd_value = wins_ones; an = 4'b1110; end
+            2'd1: begin bcd_value = wins_tens; an = 4'b1101; end
+            2'd2: begin bcd_value = time_ones; an = 4'b1011; end
+            2'd3: begin bcd_value = time_tens; an = 4'b0111; end
         endcase
-
     end
 
+    //  decodificador BCD -> 7 segmentos (activo en bajo) 
     always_comb begin
-
-        case (DigitoActual)
-
-            4'd0: seg = 7'b0000001;
-            4'd1: seg = 7'b1001111;
-            4'd2: seg = 7'b0010010;
-            4'd3: seg = 7'b0000110;
-            4'd4: seg = 7'b1001100;
-            4'd5: seg = 7'b0100100;
-            4'd6: seg = 7'b0100000;
-            4'd7: seg = 7'b0001111;
+        unique case (bcd_value)
+            4'd0: seg = 7'b1000000;
+            4'd1: seg = 7'b1111001;
+            4'd2: seg = 7'b0100100;
+            4'd3: seg = 7'b0110000;
+            4'd4: seg = 7'b0011001;
+            4'd5: seg = 7'b0010010;
+            4'd6: seg = 7'b0000010;
+            4'd7: seg = 7'b1111000;
             4'd8: seg = 7'b0000000;
-            4'd9: seg = 7'b0000100;
-
-            default: seg = 7'b1111111;
-
+            4'd9: seg = 7'b0010000;
+            default: seg = 7'b1111111; // apagado ante valor invalido (>9)
         endcase
-
     end
-
-    assign dp = 1'b1;
-
+ 
+    assign dp = 1'b1; // punto decimal siempre apagado
+ 
 endmodule
