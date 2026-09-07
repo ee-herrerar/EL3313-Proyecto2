@@ -147,10 +147,6 @@ El núcleo `UART_rx` procesa la señal serie de entrada `rx` y la convierte a un
 
 * **Generación de Reloj de Sobremuestreo ($16\times$):**
   El número de ciclos de reloj de 100 MHz por cada pulso del reloj de sobremuestreo se define como:
-   <!-- 
-   $$	ext{BAUD\_X16\_CLK\_TICKS} = rac{f_{	ext{clk}}}{	ext{Baud Rate} 	imes 16} = rac{100 	imes 10^6 	ext{ Hz}}{115200 	imes 16}  pprox 54.25 \implies 54$$
-  -->
-  
 $$\text{BAUD\_X16\_CLK\_TICKS} = \frac{f_{\text{clk}}}{\text{Baud Rate} \times 16} = \frac{100 \times 10^6 \text{ Hz}}{115200 \times 16} \approx 54.25 \implies 54$$
 * **Muestra en el Centro del Bit:**
   Al detectar la transición a '0' del bit de *START*, la FSM del receptor espera 7 ciclos del reloj de sobremuestreo para posicionar el punto de muestreo exactamente en el centro de la duración del bit. Posteriormente, efectúa lecturas cada 16 pulsos del reloj sobremuestreado para reconstruir el byte completo en `rx_stored_data`. Cuando se valida el bit de *STOP*, se genera un pulso de un ciclo en `rx_data_rdy`.
