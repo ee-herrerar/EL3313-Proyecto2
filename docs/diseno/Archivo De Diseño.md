@@ -39,10 +39,7 @@ Para el almacenamiento de las palabras se necesita considerar los siguientes dat
 - Longitud: Este dato no es estrictamente necesario, sin embargo, ayuda a descifrar cuantas letras tiene realmente la palabra, ya que si por ejemplo, la palabra es "HOLA", el resto de bits tiene que ser rellenado con algo más, por lo que se puede enviar un dato adicional que indica que solamente las 4 primeras letras se usan.
    $$\texttt{largo[4:0]}$$
 
-<<<<<<< HEAD
 ### LSFR
-=======
-Aquí tienes la sección redactada en formato Markdown, enfocada en la explicación del funcionamiento sin incluir bloques de código:
 
 ### Selector de Índice vía LFSR
 
@@ -70,7 +67,6 @@ Dado que el banco de palabras en la memoria ROM contiene un máximo de 50 elemen
 2. Al activarse la señal de habilitación (`enable`) proveniente de la FSM principal al cambiar de estado, el módulo evalúa si la salida instantánea `op` del LFSR se encuentra dentro del rango válido (`op < 50`).
 3. Si el valor es menor a 50, se captura y actualiza el valor de salida `word_index`. Si el valor es mayor o igual a 50 (entre 50 y 63), la lectura se descarta en ese ciclo hasta que el LFSR avance a un número menor a 50.
 
->>>>>>> b89bb11ce3f82bd13a6ce85f671506a7f68a495b
 ---
 Este módulo se encarga de generar un número pseudoaleatorio que se utilizará para seleccionar cuál de las palabras almacenadas en el banco ROM será utilizada durante el juego. Para generar estos valores, el módulo utiliza un registro de desplazamiento y una operación XOR entre ciertos bits previamente definidos, conocidos como _taps_.
 
@@ -109,9 +105,7 @@ El numero de coincidencias es encargado de indicar cuales letras fueron acertada
 El Timer es el módulo encargado de controlar el tiempo disponible durante cada partida. Una vez que la palabra ha sido seleccionada y la partida entra en estado activo, el temporizador comienza una cuenta regresiva desde un valor determinado por la dificultad seleccionada Se tienen sugeridos un tiempo de 60 segundos para el modo fácil, y 45 para el modo difícil
 Mientras la partida se encuentre activa, el módulo disminuye el tiempo restante una vez por segundo. Cuando el contador llega a cero, genera una señal Timeout, la cual es enviada a la FSM para indicar que la partida debe finalizar con una derrota. El valor del tiempo restante también se envía al controlador de los displays de 7 segmentos para ser mostrado al jugador.
 
-<<<<<<< HEAD
 ### UART (Peripheral/Core)
-=======
 ### Comunicación Serial (UART)
 Para establecer el enlace de comunicación bidireccional entre la FPGA y la PC (a través de la aplicación en Python), el sistema utiliza un periférico UART de 32 bits mapeado a memoria. Este bloque integra los núcleos de transmisión (`UART_tx`) y recepción (`UART_rx`) en VHDL con una interfaz SystemVerilog estandarizada.
 
@@ -157,7 +151,6 @@ El *wrapper* SystemVerilog expone la interfaz de registros de 32 bits hacia la l
   La comunicación opera de forma bidireccional full-duplex sobre el enlace UART a 115200 baudios:
   1. **Recepción desde Python (PC $	o$ FPGA):** La aplicación Python envía un carácter en formato ASCII que representa la letra adivinada por el usuario. Cuando el módulo `UART_rx` captura la trama completa, activa `rx_data_rdy`. El *wrapper* almacena el byte en `rx_data` y coloca la bandera `new_rx` en `1`. La FSM principal lee el registro `DATOS 1` y posteriormente escribe un `'0'` en el bit `new_rx` de `CONTROL` para limpiar el flag.
   2. **Transmisión hacia Python (FPGA $	o$ PC):** La FSM de la FPGA escribe la respuesta (inicio de partida, acierto/error, patrón actualizado de la palabra, intentos restantes o resultado final) en el registro `DATOS 0` y setea el bit `send` (bit 0 del registro `CONTROL`). El *wrapper* emite un pulso en `tx_start_pulse` hacia `UART_tx` e inicia la serialización de la trama. Al terminar el envío, el hardware borra automáticamente el bit `send`.
->>>>>>> b89bb11ce3f82bd13a6ce85f671506a7f68a495b
 ---
 #### UART Periférico
 Este módulo se encarga de gestionar la comunicación bidireccional entre la FPGA y la aplicación ejecutada en la PC. Para esto utiliza el núcleo UART TX/RX proporcionado y expone una interfaz de registros hacia la lógica del juego. El periférico permite recibir las letras enviadas desde la PC y transmitir hacia esta la información correspondiente al estado de la partida.
