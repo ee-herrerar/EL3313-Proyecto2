@@ -165,6 +165,8 @@ Este módulo se encarga de gestionar la comunicación bidireccional entre la FPG
 ### Sonido Y LEDs
 ---
 ### LCD
----
+<div align="center">
+<img src="./ImagenesDocu/DIAGRAMA NIVEL 1 UART_TX.png" width="500" height="300">
+</div>
 ### Botones
 ---
