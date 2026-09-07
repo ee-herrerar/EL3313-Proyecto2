@@ -1,10 +1,6 @@
 ## Diagrama de Bloques
 ---
-<<<<<<< HEAD
-![DiagramaBloquesGlobal.png](DiagramaBloquesGlobal.png)
-=======
-![Diagrama de Bloques Globa](./Imagenes/DiagramaBloquesGlobal.png)
->>>>>>> b89bb11ce3f82bd13a6ce85f671506a7f68a495b
+![Diagrama de Bloques Global](./Imagenes/DiagramaBloquesGlobal.png)
 
 ## PC App
 ---
@@ -16,11 +12,7 @@ El subsistema de juego es el encargado de manejar la lógica principal del juego
 
 ### FSM del Juego
 ---
-<<<<<<< HEAD
-![FSMDiagrama.png](FSMDiagrama.png)
-=======
-![](./Imagenes/FSMDiagrama.png)
->>>>>>> b89bb11ce3f82bd13a6ce85f671506a7f68a495b
+![Diagrama FSM](./Imagenes/FSMDiagrama.png)
 
 
 |  **Estado Actual**   |                               **Condición de Salto**                               |                                                      **Accion a Realizar**                                                       |                **Salto a Realizar**                 |
