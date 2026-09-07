@@ -135,7 +135,7 @@ El núcleo `UART_tx` realiza la conversión de datos paralelos de 8 bits a una t
   <!--
   $$	ext{BAUD CLK TICKS} = rac{f_{	ext{clk}}}{	ext{Baud Rate}} = rac{100 	imes 10^6 	ext{ Hz}}{115200 	ext{ baud}}  pprox 868.06 -> 868$$
   -->
-$$\text{BAUD\_CLK\_TICKS} = \frac{f_{\text{clk}}}{\text{Baud Rate}} = \frac{100 \times 10^6 \text{ Hz}}{115200 \text{ baud}} \approx 868.06 \implies 868$$
+$$\text{BAUD_CLK_TICKS} = \frac{f_{\text{clk}}}{\text{Baud Rate}} = \frac{100 \times 10^6 \text{ Hz}}{115200 \text{ baud}} \approx 868.06 \implies 868$$
 * **Detección de Pulso y Transmisión:**
   Un proceso interno (`tx_start_detector`) captura impulsos en la señal `tx_start`. Al detectarse la activación, el dato a transmitir se almacena en el registro `stored_data` y la FSM avanza secuencialmente enviando el bit de *START* (`'0'`), los 8 bits de datos desde el LSB hasta el MSB, y finaliza con el bit de *STOP* (`'1'`). La señal `tx_rdy` notifica la finalización del envío.
 
@@ -147,7 +147,7 @@ El núcleo `UART_rx` procesa la señal serie de entrada `rx` y la convierte a un
 
 * **Generación de Reloj de Sobremuestreo ($16\times$):**
   El número de ciclos de reloj de 100 MHz por cada pulso del reloj de sobremuestreo se define como:
-$$\text{BAUD\_X16\_CLK\_TICKS} = \frac{f_{\text{clk}}}{\text{Baud Rate} \times 16} = \frac{100 \times 10^6 \text{ Hz}}{115200 \times 16} \approx 54.25 \implies 54$$
+$$\text{BAUD\_X16_CLK_TICKS} = \frac{f_{\text{clk}}}{\text{Baud Rate} \times 16} = \frac{100 \times 10^6 \text{ Hz}}{115200 \times 16} \approx 54.25 \implies 54$$
 * **Muestra en el Centro del Bit:**
   Al detectar la transición a '0' del bit de *START*, la FSM del receptor espera 7 ciclos del reloj de sobremuestreo para posicionar el punto de muestreo exactamente en el centro de la duración del bit. Posteriormente, efectúa lecturas cada 16 pulsos del reloj sobremuestreado para reconstruir el byte completo en `rx_stored_data`. Cuando se valida el bit de *STOP*, se genera un pulso de un ciclo en `rx_data_rdy`.
 
