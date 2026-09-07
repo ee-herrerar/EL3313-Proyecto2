@@ -41,8 +41,6 @@ Para el almacenamiento de las palabras se necesita considerar los siguientes dat
 
 <<<<<<< HEAD
 ### LSFR
-=======
-Aquí tienes la sección redactada en formato Markdown, enfocada en la explicación del funcionamiento sin incluir bloques de código:
 
 ### Selector de Índice vía LFSR
 
