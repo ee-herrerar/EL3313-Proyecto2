@@ -135,7 +135,7 @@ El núcleo `UART_tx` realiza la conversión de datos paralelos de 8 bits a una t
   <!--
   $$	ext{BAUD CLK TICKS} = rac{f_{	ext{clk}}}{	ext{Baud Rate}} = rac{100 	imes 10^6 	ext{ Hz}}{115200 	ext{ baud}}  pprox 868.06 -> 868$$
   -->
-
+$$\text{BAUD\_CLK\_TICKS} = \frac{f_{\text{clk}}}{\text{Baud Rate}} = \frac{100 \times 10^6 \text{ Hz}}{115200 \text{ baud}} \approx 868.06 \implies 868$$
 * **Detección de Pulso y Transmisión:**
   Un proceso interno (`tx_start_detector`) captura impulsos en la señal `tx_start`. Al detectarse la activación, el dato a transmitir se almacena en el registro `stored_data` y la FSM avanza secuencialmente enviando el bit de *START* (`'0'`), los 8 bits de datos desde el LSB hasta el MSB, y finaliza con el bit de *STOP* (`'1'`). La señal `tx_rdy` notifica la finalización del envío.
 
