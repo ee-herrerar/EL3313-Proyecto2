@@ -69,3 +69,5 @@ env/
 .DS_Store
 
 *.out
+.obsidian/
+.obsidian/*
