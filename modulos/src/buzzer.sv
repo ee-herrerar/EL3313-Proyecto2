@@ -1,13 +1,13 @@
 module buzzer_driver #(
     parameter integer CLK_FREQ_HZ     = 100_000_000,
-    parameter integer CORRECT_FREQ_HZ = 1000,
-    parameter integer CORRECT_MS      = 100,
-    parameter integer INCORRECT_FREQ_HZ = 300,
-    parameter integer INCORRECT_MS      = 150,
+    parameter integer CORRECT_FREQ_HZ = 2000,
+    parameter integer CORRECT_MS      = 150,
+    parameter integer INCORRECT_FREQ_HZ = 500,
+    parameter integer INCORRECT_MS      = 250,
     parameter integer WIN_FREQ_HZ       = 800,
     parameter integer WIN_MS            = 500,
-    parameter integer LOSE_FREQ_HZ      = 200,
-    parameter integer LOSE_MS           = 500
+    parameter integer LOSE_FREQ_HZ      = 300,
+    parameter integer LOSE_MS           = 1000
 )(
     input  logic clk,
     input  logic rst,
