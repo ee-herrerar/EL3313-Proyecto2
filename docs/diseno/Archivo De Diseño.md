@@ -182,10 +182,29 @@ Este módulo se encarga de gestionar la comunicación bidireccional entre la FPG
 ---
 
 ### Displays 7 Segmentos
+---
+El módulo `Display7seg` controla cuatro displays de siete segmentos mediante multiplexación. Utiliza un divisor de reloj parametrizable para activar cada dígito de forma secuencial, con una frecuencia de refresco predeterminada de 1000 Hz por dígito.
+
+Los cuatro dígitos muestran dos valores en formato BCD: las unidades y decenas de victorias (`wins_ones` y `wins_tens`), y las unidades y decenas del tiempo restante (`time_ones` y `time_tens`). El módulo también incluye un decodificador BCD a siete segmentos para representar los valores del 0 al 9. Los ánodos y segmentos trabajan con lógica activa en bajo, mientras que el punto decimal permanece apagado.
 
 ### Sonido Y LEDs
 ---
+El módulo `Buzzer` genera una onda cuadrada para producir sonidos asociados a los eventos principales del juego. Sus entradas `Acierto`, `Fallo` y `GameOver` activan, respectivamente, los siguientes tonos:
+
+| Evento | Frecuencia | Duración |
+| :---: | :---: | :---: |
+| Acierto | 2000 Hz | 150 ms |
+| Fallo | 500 Hz | 250 ms |
+| Game Over | 300 Hz | 1000 ms |
+
+El módulo permite que solo un tono esté activo a la vez y devuelve la salida `buzzer` a cero al finalizar la duración configurada.
+
+El módulo `status_led` utiliza una entrada de dos bits (`game_state`) para indicar visualmente el estado general del juego mediante un banco de 16 LEDs. En el estado de selección de modo se enciende `led[0]`, durante la partida se enciende `led[1]` y al mostrar el resultado final se enciende `led[2]`. Los demás LEDs permanecen apagados.
+
 ### LCD
 ---
 ### Botones
 ---
+El módulo `Botones` recibe las entradas físicas de los botones de selección (`BTN_SEL`) y confirmación (`BTN_OK`). Antes de generar las señales de control, las entradas pasan por una etapa de sincronización para reducir el riesgo de metaestabilidad y por un filtro antirrebote implementado mediante el módulo `Debouncer`.
+
+Después del filtrado, el módulo detecta el flanco de subida de cada botón y genera un pulso de un ciclo de reloj. Las salidas `btn_sel_pulsado` y `btn_ok_pulsado` corresponden, respectivamente, a los botones de selección y confirmación.
