@@ -1,4 +1,4 @@
-module seven_seg_mux #(
+module Display7seg #(
     parameter integer CLK_FREQ_HZ    = 100_000_000,
     parameter integer REFRESH_HZ     = 1000          // refresco por digito
 )(
