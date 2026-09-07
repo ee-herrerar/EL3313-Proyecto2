@@ -183,6 +183,17 @@ Este módulo se encarga de gestionar la comunicación bidireccional entre la FPG
 
 ### Displays 7 Segmentos
 
+Controlador de los 4 digitos de 7 segmentos propios de la Basys3 (activos en bajo, tanto segmentos como anodos). Multiplexa los 4 digitos a una tasa de refresco fija derivada del reloj de 100 MHz, de forma imperceptible al ojo humano (sin parpadeo).
+
+Asignacion sugerida (documentar en el informe si se cambia):
+-an[3] (mas a la izquierda) -> time_tens   (decenas de segundos restantes)
+-an[2]                      -> time_ones   (unidades de segundos restantes)
+-an[1]                      -> wins_tens   (decenas de partidas ganadas)
+-an[0] (mas a la derecha)   -> wins_ones   (unidades de partidas ganadas)
+
+Cada entrada de digito es un valor BCD de 0 a 9 (4 bits).
+seg[6:0] = {g,f,e,d,c,b,a}, activo en bajo (patron estandar deanodo comun). dp se deja siempre apagado (activo en bajo -> '1').
+
 ### Sonido Y LEDs
 ---
 ### LCD
