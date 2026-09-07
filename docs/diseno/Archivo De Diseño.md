@@ -192,14 +192,14 @@ El subsistema LCD se encarga de mostrara mensajes en la pantalla. Durante la pri
 La siguiente máquina de estados tiene la función de escribir los caracteres que reciba, se planea que funcione independientemente de forma que sea capaz de escribir lo que se necesita independientemente del estado en que se encuentre el juego.  La primera parte de la FSM corresponde a una inicialización por instrucciones igual a la presentada en la página 45 de la hoja de datos [], esta se realiza como precaución en caso de que el circuito interno de reinicio del HD44780 no funcione como debería, iniciando en “POWER ON” y terminando en “WAIT”, se planea que la secuencia de inicialización se realice una única vez al encender. Una vez termina la inicialización el sistema permanece en “WAIT” esperando recibir una señal de inicio, a partir de aquí hay dos modos, el modo de incremento (inc = 1) y el modo aleatorio (inc = 0). El modo de incremento se usa para aprovechar la función del LCD que incrementa una posición el cursor cada que se agrega un carácter, permitiendo una escritura fluida, este modo se usaría para escribir “FACIL”, “DIFICIL”, “GANO”, “PERDIO” y los guiones que sustituyen las letras de la palabra, en este modo se espera que el módulo reciba cada carácter sucesivamente cuando este no se encuentre ocupado o una señal que limpie la pantalla (clear) si fuese necesario. Por otro lado, esta el modo aleatorio, este esta pensado para ser usado una vez ha iniciado el juego debido a que el usuario puede introducir caracteres en un orden impredecible, en este modo primero se introduce una instrucción que mueve el cursor a la dirección de la letra y luego se escribe el carácter correspondiente, se repite este proceso hasta que el carácter este en todas las posiciones que le corresponde. 
 
 <div align="center">
-<img src="./Imagenes/FSM LCD.png" width="500" height="300">
+<img src="./Imagenes/FSM LCD.png" width="500" height="500">
 </div>
 
 #### Nivel  1
 En el subsistema LCD se planea utilizar las siguientes señales de entrada y salida:
 
 <div align="center">
-<img src="./Imagenes/NIVEL 1.png" width="500" height="300">
+<img src="./Imagenes/NIVEL 1.png" width="500" height="500">
 </div>
 
 #### Nivel 2
@@ -207,7 +207,7 @@ En el subsistema LCD se planea utilizar las siguientes señales de entrada y sal
 #### Nivel 3
 
 <div align="center">
-<img src="./Imagenes/NIVEL 3.png" width="500" height="300">
+<img src="./Imagenes/NIVEL 3.png" width="500" height="500">
 </div>
 
 ### Botones
