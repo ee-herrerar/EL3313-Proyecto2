@@ -33,7 +33,7 @@ module Display7seg #(
  
     assign tick_en = (tick_cnt == TICKS_PER_DIGIT - 1);
  
-    // ---- selector de digito activo (0..3), avanza con clock enable ----
+    // selector de digito activo (0..3), avanza con clock enable 
     logic [1:0] digit_sel;
  
     always_ff @(posedge clk) begin
@@ -43,7 +43,7 @@ module Display7seg #(
             digit_sel <= digit_sel + 1'b1;
     end
  
-    // ---- mux del valor BCD y del anodo activo segun digit_sel ----
+    // mux del valor BCD y del anodo activo segun digit_sel 
     logic [3:0] bcd_value;
  
     always_comb begin
