@@ -1,8 +1,25 @@
 ## Diagrama de Bloques
 ---
-![Diagrama de Bloques Global](./Imagenes/DiagramaBloquesGlobal.png)
+### Diagrama de primer nivel
+<p align="center">
+  <img src="./Imagenes/DiagramaNivel-N1.svg" alt="Diagrama de Bloques de Primer Nivel" width="75%" />
+</p>
+
+### Diagrama de Segundo Nivel
+
+<p align="center">
+  <img src="./Imagenes/DiagramaNivel-N2.svg" alt="Diagrama de Bloques de Segundo Nivel" width="75%" />
+</p>
+
+### Diagrama de Tercer Nivel
+
+<p align="center">
+  <img src="./Imagenes/DiagramaNivel-N3.svg" alt="Diagrama de Bloques de Tercer Nivel" width="75%" />
+</p>
+
 
 ## PC App
+
 ---
 El PC App es el encargado de recibir los inputs directos del jugador, en este caso la letra seleccionada, validar que esta sea una entrada permitida y enviarla a la FPGA mediante la conexión física y el sistema de comunicación UART. Una vez recibida, la letra es procesada por la FPGA para aplicar la lógica correspondiente del juego. La aplicación también recibe desde la FPGA información sobre el estado de la partida y la muestra al jugador. Este programa se desarrollará exclusivamente en el lenguaje de programación Python.
 ## Subsistema de Juego
@@ -115,8 +132,10 @@ El núcleo `UART_tx` realiza la conversión de datos paralelos de 8 bits a una t
 
 * **Generación de Baud Rate (115200 Baudios):**
   Para un reloj de sistema de 100 MHz, el divisor de reloj se calcula mediante la relación:
-  $$	ext{BAUD\_CLK\_TICKS} = rac{f_{	ext{clk}}}{	ext{Baud Rate}} = rac{100 	imes 10^6 	ext{ Hz}}{115200 	ext{ baud}}  pprox 868.06 \implies 868$$
-
+  <!--
+  $$	ext{BAUD CLK TICKS} = rac{f_{	ext{clk}}}{	ext{Baud Rate}} = rac{100 	imes 10^6 	ext{ Hz}}{115200 	ext{ baud}}  pprox 868.06 -> 868$$
+  -->
+$$BAUD \ CLK \ TICKS = \frac{f_{clk}}{Baud \ Rate} = \frac{100 \times 10^6 \ Hz}{115200 \ baud} \approx 868.06 \implies 868$$
 * **Detección de Pulso y Transmisión:**
   Un proceso interno (`tx_start_detector`) captura impulsos en la señal `tx_start`. Al detectarse la activación, el dato a transmitir se almacena en el registro `stored_data` y la FSM avanza secuencialmente enviando el bit de *START* (`'0'`), los 8 bits de datos desde el LSB hasta el MSB, y finaliza con el bit de *STOP* (`'1'`). La señal `tx_rdy` notifica la finalización del envío.
 
@@ -124,12 +143,11 @@ El núcleo `UART_tx` realiza la conversión de datos paralelos de 8 bits a una t
 
 #### 2. Módulo Receptor UART (`UART_rx.vhd`)
 
-El núcleo `UART_rx` procesa la señal serie de entrada `rx` y la convierte a un formato paralelo de 8 bits empleando un esquema de sobremuestreo por un factor de 16 ($16	imes$).
+El núcleo `UART_rx` procesa la señal serie de entrada `rx` y la convierte a un formato paralelo de 8 bits empleando un esquema de sobremuestreo por un factor de 16 ($16\times$).
 
-* **Generación de Reloj de Sobremuestreo ($16	imes$):**
+* **Generación de Reloj de Sobremuestreo ($16\times$):**
   El número de ciclos de reloj de 100 MHz por cada pulso del reloj de sobremuestreo se define como:
-  $$	ext{BAUD\_X16\_CLK\_TICKS} = rac{f_{	ext{clk}}}{	ext{Baud Rate} 	imes 16} = rac{100 	imes 10^6 	ext{ Hz}}{115200 	imes 16}  pprox 54.25 \implies 54$$
-
+$$BAUD \ X16 \ CLK \ TICKS = \frac{f_{clk}}{Baud Rate} \times 16 = \frac{100 \times 10^6 Hz}{115200 \times 16} \approx 54.25 \implies 54$$
 * **Muestra en el Centro del Bit:**
   Al detectar la transición a '0' del bit de *START*, la FSM del receptor espera 7 ciclos del reloj de sobremuestreo para posicionar el punto de muestreo exactamente en el centro de la duración del bit. Posteriormente, efectúa lecturas cada 16 pulsos del reloj sobremuestreado para reconstruir el byte completo en `rx_stored_data`. Cuando se valida el bit de *STOP*, se genera un pulso de un ciclo en `rx_data_rdy`.
 
@@ -149,8 +167,8 @@ El *wrapper* SystemVerilog expone la interfaz de registros de 32 bits hacia la l
 
 * **Protocolo de Enlace Bidireccional con Python (`pyserial`):**
   La comunicación opera de forma bidireccional full-duplex sobre el enlace UART a 115200 baudios:
-  1. **Recepción desde Python (PC $	o$ FPGA):** La aplicación Python envía un carácter en formato ASCII que representa la letra adivinada por el usuario. Cuando el módulo `UART_rx` captura la trama completa, activa `rx_data_rdy`. El *wrapper* almacena el byte en `rx_data` y coloca la bandera `new_rx` en `1`. La FSM principal lee el registro `DATOS 1` y posteriormente escribe un `'0'` en el bit `new_rx` de `CONTROL` para limpiar el flag.
-  2. **Transmisión hacia Python (FPGA $	o$ PC):** La FSM de la FPGA escribe la respuesta (inicio de partida, acierto/error, patrón actualizado de la palabra, intentos restantes o resultado final) en el registro `DATOS 0` y setea el bit `send` (bit 0 del registro `CONTROL`). El *wrapper* emite un pulso en `tx_start_pulse` hacia `UART_tx` e inicia la serialización de la trama. Al terminar el envío, el hardware borra automáticamente el bit `send`.
+  1. **Recepción desde Python (PC $\to$ FPGA):** La aplicación Python envía un carácter en formato ASCII que representa la letra adivinada por el usuario. Cuando el módulo `UART_rx` captura la trama completa, activa `rx_data_rdy`. El *wrapper* almacena el byte en `rx_data` y coloca la bandera `new_rx` en `1`. La FSM principal lee el registro `DATOS 1` y posteriormente escribe un `'0'` en el bit `new_rx` de `CONTROL` para limpiar el flag.
+  2. **Transmisión hacia Python (FPGA $\to$ PC):** La FSM de la FPGA escribe la respuesta (inicio de partida, acierto/error, patrón actualizado de la palabra, intentos restantes o resultado final) en el registro `DATOS 0` y setea el bit `send` (bit 0 del registro `CONTROL`). El *wrapper* emite un pulso en `tx_start_pulse` hacia `UART_tx` e inicia la serialización de la trama. Al terminar el envío, el hardware borra automáticamente el bit `send`.
 ---
 #### UART Periférico
 Este módulo se encarga de gestionar la comunicación bidireccional entre la FPGA y la aplicación ejecutada en la PC. Para esto utiliza el núcleo UART TX/RX proporcionado y expone una interfaz de registros hacia la lógica del juego. El periférico permite recibir las letras enviadas desde la PC y transmitir hacia esta la información correspondiente al estado de la partida.
@@ -159,11 +177,46 @@ Este módulo se encarga de gestionar la comunicación bidireccional entre la FPG
 ---
 ---
 
-
 ### Displays 7 Segmentos
+---
+El módulo `Display7seg` controla cuatro displays de siete segmentos mediante multiplexación. Utiliza un divisor de reloj parametrizable para activar cada dígito de forma secuencial, con una frecuencia de refresco predeterminada de 1000 Hz por dígito.
+
+Los cuatro dígitos muestran dos valores en formato BCD: las unidades y decenas de victorias (`wins_ones` y `wins_tens`), y las unidades y decenas del tiempo restante (`time_ones` y `time_tens`). El módulo también incluye un decodificador BCD a siete segmentos para representar los valores del 0 al 9. Los ánodos y segmentos trabajan con lógica activa en bajo, mientras que el punto decimal permanece apagado.
+
+Controlador de los 4 digitos de 7 segmentos propios de la Basys3 (activos en bajo, tanto segmentos como anodos). Multiplexa los 4 digitos a una tasa de refresco fija derivada del reloj de 100 MHz, de forma imperceptible al ojo humano (sin parpadeo).
+
+Asignacion sugerida (documentar en el informe si se cambia):
+-an[3] (mas a la izquierda) -> time_tens   (decenas de segundos restantes)
+-an[2]                      -> time_ones   (unidades de segundos restantes)
+-an[1]                      -> wins_tens   (decenas de partidas ganadas)
+-an[0] (mas a la derecha)   -> wins_ones   (unidades de partidas ganadas)
+
+Cada entrada de digito es un valor BCD de 0 a 9 (4 bits).
+seg[6:0] = {g,f,e,d,c,b,a}, activo en bajo (patron estandar deanodo comun). dp se deja siempre apagado (activo en bajo -> '1').
+
+
+<img width="1280" height="630" alt="WhatsApp Image 2026-09-07 at 3 45 21 PM" src="https://github.com/user-attachments/assets/3e9517b9-213d-44e4-9abf-a0ce508eec2a" />
+Diagrama primer nivel modulo de displays.
+
+
+<img width="792" height="868" alt="WhatsApp Image 2026-09-07 at 4 33 52 PM" src="https://github.com/user-attachments/assets/3a2b81a6-8f41-40d9-af5b-09e8561c9397" />
+
+Diagrama segundo nivel modulo de displays.
 
 ### Sonido Y LEDs
 ---
+El módulo `Buzzer` genera una onda cuadrada para producir sonidos asociados a los eventos principales del juego. Sus entradas `Acierto`, `Fallo` y `GameOver` activan, respectivamente, los siguientes tonos:
+
+| Evento | Frecuencia | Duración |
+| :---: | :---: | :---: |
+| Acierto | 2000 Hz | 150 ms |
+| Fallo | 500 Hz | 250 ms |
+| Game Over | 300 Hz | 1000 ms |
+
+El módulo permite que solo un tono esté activo a la vez y devuelve la salida `buzzer` a cero al finalizar la duración configurada.
+
+El módulo `status_led` utiliza una entrada de dos bits (`game_state`) para indicar visualmente el estado general del juego mediante un banco de 16 LEDs. En el estado de selección de modo se enciende `led[0]`, durante la partida se enciende `led[1]` y al mostrar el resultado final se enciende `led[2]`. Los demás LEDs permanecen apagados.
+
 ### LCD
 El subsistema LCD se encarga de mostrara mensajes en la pantalla. Durante la primera etapa de selección de dificultad, alterna entre los mensajes de “FACIL” y “DIFICIL”, permitiendo al usuario elegir entre ambas opciones, al finalizar esta etapa el subsistema se encarga de escribir guiones bajos que representen cada letra de la palabra escogida pseudoaleatoriamente. En la segunda etapa el juego ya ha empezado, aquí el sistema recibe una letra, la cantidad de veces que se repite y cada una de sus ubicaciones, de esta forma se va formando la palara conforme el usuario acierte. Finalmente, una vez el juego ha terminado, se le indica al usuario si perdió o gano.
 
@@ -171,14 +224,14 @@ El subsistema LCD se encarga de mostrara mensajes en la pantalla. Durante la pri
 La siguiente máquina de estados tiene la función de escribir los caracteres que reciba, se planea que funcione independientemente de forma que sea capaz de escribir lo que se necesita independientemente del estado en que se encuentre el juego.  La primera parte de la FSM corresponde a una inicialización por instrucciones igual a la presentada en la página 45 de la hoja de datos [], esta se realiza como precaución en caso de que el circuito interno de reinicio del HD44780 no funcione como debería, iniciando en “POWER ON” y terminando en “WAIT”, se planea que la secuencia de inicialización se realice una única vez al encender. Una vez termina la inicialización el sistema permanece en “WAIT” esperando recibir una señal de inicio, a partir de aquí hay dos modos, el modo de incremento (inc = 1) y el modo aleatorio (inc = 0). El modo de incremento se usa para aprovechar la función del LCD que incrementa una posición el cursor cada que se agrega un carácter, permitiendo una escritura fluida, este modo se usaría para escribir “FACIL”, “DIFICIL”, “GANO”, “PERDIO” y los guiones que sustituyen las letras de la palabra, en este modo se espera que el módulo reciba cada carácter sucesivamente cuando este no se encuentre ocupado o una señal que limpie la pantalla (clear) si fuese necesario. Por otro lado, esta el modo aleatorio, este esta pensado para ser usado una vez ha iniciado el juego debido a que el usuario puede introducir caracteres en un orden impredecible, en este modo primero se introduce una instrucción que mueve el cursor a la dirección de la letra y luego se escribe el carácter correspondiente, se repite este proceso hasta que el carácter este en todas las posiciones que le corresponde. 
 
 <div align="center">
-<img src="./Imagenes/FSM LCD.png" width="500" height="300">
+<img src="./Imagenes/FSM LCD.png" width="500" height="500">
 </div>
 
 #### Nivel  1
 En el subsistema LCD se planea utilizar las siguientes señales de entrada y salida:
 
 <div align="center">
-<img src="./Imagenes/NIVEL 1.png" width="500" height="300">
+<img src="./Imagenes/NIVEL 1.png" width="500" height="500">
 </div>
 
 #### Nivel 2
@@ -186,8 +239,11 @@ En el subsistema LCD se planea utilizar las siguientes señales de entrada y sal
 #### Nivel 3
 
 <div align="center">
-<img src="./Imagenes/NIVEL 3.png" width="500" height="300">
+<img src="./Imagenes/NIVEL 3.png" width="500" height="500">
 </div>
 
 ### Botones
 ---
+El módulo `Botones` recibe las entradas físicas de los botones de selección (`BTN_SEL`) y confirmación (`BTN_OK`). Antes de generar las señales de control, las entradas pasan por una etapa de sincronización para reducir el riesgo de metaestabilidad y por un filtro antirrebote implementado mediante el módulo `Debouncer`.
+
+Después del filtrado, el módulo detecta el flanco de subida de cada botón y genera un pulso de un ciclo de reloj. Las salidas `btn_sel_pulsado` y `btn_ok_pulsado` corresponden, respectivamente, a los botones de selección y confirmación.
