@@ -20,18 +20,19 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module dificultad_en_LCD(
-    input clk,
-    input reset,
-    input dificultad,
-    input btn_select,
-    input busy,
-    output logic start,
+module dificultad_en_LCD (
+    input  logic       clk,
+    input  logic       reset,
+    input  logic       dificultad,  // Cambia cada 5 segundos (0: FACIL, 1: DIFICIL)
+    input  logic       btn_select,  // Bot贸n para elegir dificultad
+    input  logic       busy,        // Viene de la FSM_LCD
+    input  logic       start_writing,
+    
+    output logic       start,
     output logic [7:0] data_byte,
-    output logic mode,
-    output logic [3:0] clear_write,
-    output logic done
-    );
+    output logic       mode,        // 1: Incremental
+    output logic [3:0] clear_write
+);
 
     assign mode = 1'b1;
 
@@ -63,21 +64,18 @@ module dificultad_en_LCD(
             clear_write    <= 4'b0;
             data_byte      <= 8'h00;
             dificultad_reg <= 1'b0;
-            done           <= 1'b0;
         end else begin
             start       <= 1'b0;
             clear_write <= 4'b0;
-            done        <= 1'b0;
 
-            // Interrupci髇 por bot髇 de selecci髇
+            // Interrupci贸n por bot贸n de selecci贸n
             if (btn_select && state != LOCKED) begin
-                clear_write <= 4'b0001;
                 state       <= LAST_CLEAN;
             end else begin
                 case (state)
                     // Espera inicial a que la FSM del LCD termine de inicializarse al encender
                     WAIT_INIT: begin
-                        if (!busy) begin
+                        if (!busy && start_writing) begin
                             dificultad_reg <= dificultad;
                             clear_write    <= 4'b0001;
                             char_index     <= '0;
@@ -86,10 +84,9 @@ module dificultad_en_LCD(
                     end
 
                     IDLE: begin
-                        // Espera a que la se馻l de 5s cambie el valor de dificultad
+                        // Espera a que la se帽al de 5s cambie el valor de dificultad
                         if (dificultad != dificultad_reg) begin
                             dificultad_reg <= dificultad;
-                            clear_write    <= 4'b0001;
                             char_index     <= '0;
                             state          <= SEND_CLEAR;
                         end
@@ -97,6 +94,7 @@ module dificultad_en_LCD(
 
                     SEND_CLEAR: begin
                         if (!busy) begin
+                            clear_write    <= 4'b0001;
                             state <= SEND_CHAR;
                         end
                     end
@@ -118,7 +116,7 @@ module dificultad_en_LCD(
                                 start     <= 1'b1;
 
                                 if (char_index == 3'd6) begin
-                                    state <= WAIT_FSM; // Termina 
+                                    state <= IDLE; // Termina y se queda congelado en IDLE
                                 end else begin
                                     char_index <= char_index + 1'b1;
                                     state      <= WAIT_FSM;
@@ -135,16 +133,26 @@ module dificultad_en_LCD(
 
                     LAST_CLEAN: begin
                         if (!busy) begin
-                            done  <= 1'b1;
-                            state <= LOCKED;      
+                            clear_write <= 4'b0001;
+                            state <= LOCKED;
                         end
                     end
 
                     LOCKED: begin
                         start       <= 1'b0;
                         clear_write <= 4'b0;
-                        done        <= 1'b0;
+                        if (!busy && !start_write) begin
+                        state <= WAIT_INIT;
+                        end
                     end
+
+                    default: state <= WAIT_INIT;
+                endcase
+            end
+        end
+    end
+
+endmodule
 
                     default: state <= IDLE;
                 endcase
