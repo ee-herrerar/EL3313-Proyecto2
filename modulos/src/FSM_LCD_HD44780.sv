@@ -72,7 +72,8 @@ typedef enum logic [4:0] {
            CONTROL_REG_1 = 5'b01111,
            CONTROL_REG_2 = 5'b10000,
            CONTROL_REG_3 = 5'b10001,
-           CONTROL_REG_4 = 5'b10010
+           CONTROL_REG_4 = 5'b10010,
+           BUSY_CLEAR    = 5'b10011
 } state_t;      
 
 
@@ -113,9 +114,8 @@ end
  always @* begin
     next_state = current_state; // Por defecto
 
-    control_reg [8]= 1'b1;
-    done = 1'b0;
-    control_reg [1] = 1'b0;
+    control_reg = 32'd0;
+    data_reg = 32'd0;
     
     // Valores por defecto para evitar latches
     write_enable_o = 1'b0;
@@ -135,6 +135,7 @@ end
         end
         CONTROL_REG_1: begin
             control_reg [1]= 1'b0; // Modo de escritura
+            control_reg [8]= 1'b0; 
             addr_o = 2'b00;
             wdata_o = control_reg;
             write_enable_o = 1'b1;
@@ -227,6 +228,9 @@ end
 
     // Se decide si la escritura sera en modo incremento o en modo direccionamiento aleatorio.
         INC_RAN: begin
+            control_reg [8]= 1'b1;
+            addr_o = 2'b00;
+            wdata_o = control_reg; 
             if (mode)
                 next_state = CONTROL_REG_2;
             else
@@ -285,6 +289,13 @@ end
                 else
                     next_state = WAIT_;
         end
+        
+        BUSY_CLEAR: begin
+            control_reg [8]= 1'b1;
+            addr_o = 2'b00;
+            wdata_o = control_reg; 
+        end
+
         CLEAR_WRITE: begin        
             data_reg [7:0] = 8'b00000001;
             addr_o = 2'b01;
