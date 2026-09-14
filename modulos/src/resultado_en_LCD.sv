@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module resultado_en_LCD(
+module resultado_en_LCD (
     input  logic       clk,
     input  logic       reset,
     input  logic       start_write, // Disparo para empezar a escribir
@@ -30,19 +30,16 @@ module resultado_en_LCD(
     output logic       start,
     output logic [7:0] data_byte,
     output logic       mode,        // 1: Incremental
-    output logic       clear_write,
-    output logic       done
-    );
-
-
+    output logic       clear_write
+);
 
     assign mode = 1'b1; // Modo incremental
 
     typedef enum logic [2:0] {
-        WAIT_INIT,   // Espera inicial a que el LCD estÈ listo
+        WAIT_INIT,   // Espera inicial a que el LCD est√© listo
         IDLE,        // Espera el pulso start_write
         SEND_CLEAR,  // Espera a que la FSM procese el limpiado de pantalla
-        SEND_CHAR,   // EnvÌa el car·cter a la FSM
+        SEND_CHAR,   // Env√≠a el car√°cter a la FSM
         WAIT_FSM,    // Espera a que busy pase a '1'
         LOCKED       // Estado final congelado tras escribir
     } state_t;
@@ -66,21 +63,19 @@ module resultado_en_LCD(
             clear_write <= 1'b0;
             data_byte   <= 8'h00;
             gano_reg    <= 1'b0;
-            done        <= 1'b0
         end else begin
             start       <= 1'b0;
             clear_write <= 1'b0;
-            done        <= 1'b0
 
             case (state)
-                // Espera inicial a que el LCD termine su inicializaciÛn por hardware
+                // Espera inicial a que el LCD termine su inicializaci√≥n por hardware
                 WAIT_INIT: begin
                     if (!busy) begin
                         state <= IDLE;
                     end
                 end
 
-                // Espera a que la seÒal externa ordene escribir
+                // Espera a que la se√±al externa ordene escribir
                 IDLE: begin
                     if (start_write) begin
                         gano_reg    <= gano;
@@ -97,7 +92,7 @@ module resultado_en_LCD(
                     end
                 end
 
-                // EnvÌo caracter por caracter a la FSM principal
+                // Env√≠o caracter por caracter a la FSM principal
                 SEND_CHAR: begin
                     if (!busy) begin
                         if (gano_reg) begin
@@ -115,7 +110,6 @@ module resultado_en_LCD(
                             start     <= 1'b1;
 
                             if (char_index == 3'd5) begin // Fin de "PERDIO" (0 a 5)
-                                done  <= 1'b1;
                                 state <= LOCKED;
                             end else begin
                                 char_index <= char_index + 1'b1;
@@ -132,16 +126,18 @@ module resultado_en_LCD(
                     end
                 end
 
-                // Estado final: permanece bloqueado hasta el prÛximo reset
+                // Estado final
                 LOCKED: begin
                     start       <= 1'b0;
                     clear_write <= 1'b0;
-                    done        <= 1'b0
+                    if (!busy && !start_write) begin
+                        state <= IDLE;
+                    end
                 end
 
                 default: state <= IDLE;
             endcase
         end
-    end   
- 
+    end
+
 endmodule
