@@ -1,24 +1,26 @@
 module Top_Juego (
-    input logic clk,
-    input logic RESET,
-    input logic BTN_SEL,
-    input logic BTN_OK,
-    input logic NuevaLetra,
-    input logic [7:0] LetraUART,
-    output logic [5:0] TimerS,
-    output logic [2:0] Fallos,
-    output logic hardmode,
-    output logic GameWin,
-    output logic GameLose,
+    input  logic        clk,
+    input  logic        RESET,
+    input  logic        BTN_SEL,
+    input  logic        BTN_OK,
+    input  logic        NuevaLetra,
+    input  logic [7:0]  LetraUART,
+
+    output logic [5:0]  TimerS,
+    output logic [2:0]  Fallos,
+    output logic        hardmode,
+    output logic        GameOn,
+    output logic        GameWin,
+    output logic        GameLose,
     output logic [95:0] PalabraActual,
-    output logic [4:0] LargoPalabra,
+    output logic [4:0]  LargoPalabra,
     output logic [11:0] LetrasReveladas,
-    output logic [4:0] LetrasRestantes
+    output logic [4:0]  LetrasRestantes
 );
 
 logic [5:0] word_index;
 logic SeleccionarPalabra;
-logic GameOn;
+logic Active;
 logic [7:0] LetraActual;
 logic Acierto;
 logic [11:0] Coincidencias;
@@ -30,6 +32,7 @@ Random_index #(
     .clk(clk),
     .rst(RESET),
     .enable(SeleccionarPalabra),
+    .hardmode(hardmode),
     .word_index(word_index)
 );
 
@@ -52,6 +55,7 @@ Timer timer_inst (
     .rst(RESET),
     .hardmode(hardmode),
     .GameOn(GameOn),
+    .Active(Active),
     .TimerS(TimerS),
     .TimeOut(TimeOut)
 );
@@ -67,9 +71,11 @@ FSM_Juego fsm_inst (
     .Acierto(Acierto),
     .Coincidencias(Coincidencias),
     .TimeOut(TimeOut),
+
     .hardmode(hardmode),
     .SeleccionarPalabra(SeleccionarPalabra),
     .GameOn(GameOn),
+    .Active(Active),
     .LetraActual(LetraActual),
     .Fallos(Fallos),
     .LetrasRestantes(LetrasRestantes),
