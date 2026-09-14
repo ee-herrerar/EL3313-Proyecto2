@@ -77,6 +77,7 @@ TOP_LCD lcd_inst (
     .GameOn(GameOn),
     .GameWin(GameWin),
     .GameLose(GameLose),
+    .Fallos(Fallos),
     .PalabraActual(PalabraActual),
     .LargoPalabra(LargoPalabra),
     .LetrasReveladas(LetrasReveladas),

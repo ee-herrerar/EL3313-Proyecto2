@@ -14,28 +14,21 @@ localparam logic [2:0] MSG_INCORRECTA = 3'd3;
 localparam logic [2:0] MSG_GANASTE    = 3'd4;
 localparam logic [2:0] MSG_PERDISTE   = 3'd5;
 
-logic clk;
-logic reset;
+logic clk, reset;
+logic BTN_SEL_RAW, BTN_OK_RAW;
+logic uart_rx, uart_tx;
 
-logic BTN_SEL_RAW;
-logic BTN_OK_RAW;
-
-logic uart_rx;
-logic uart_tx;
-
-logic lcd_rs;
-logic lcd_rw;
-logic lcd_e;
+logic lcd_rs, lcd_rw, lcd_e;
 logic [7:0] lcd_data;
 
 logic [6:0] seg;
 logic dp;
 logic [3:0] an;
-
 logic [15:0] led;
 logic buzzer;
 
 integer errores;
+logic test_done;
 
 TOP_GLOBAL #(
     .SYS_CLK_FREQ(SYS_CLK_FREQ),
@@ -84,118 +77,131 @@ begin
     case (id)
         MSG_FACIL: begin
             case (index)
-                0: uart_byte = "F";
-                1: uart_byte = "A";
-                2: uart_byte = "C";
-                3: uart_byte = "I";
-                4: uart_byte = "L";
-                5: uart_byte = 8'h0D;
-                6: uart_byte = 8'h0A;
+                0: uart_byte="F"; 1: uart_byte="A";
+                2: uart_byte="C"; 3: uart_byte="I";
+                4: uart_byte="L"; 5: uart_byte=8'h0D;
+                6: uart_byte=8'h0A;
             endcase
         end
 
         MSG_DIFICIL: begin
             case (index)
-                0: uart_byte = "D";
-                1: uart_byte = "I";
-                2: uart_byte = "F";
-                3: uart_byte = "I";
-                4: uart_byte = "C";
-                5: uart_byte = "I";
-                6: uart_byte = "L";
-                7: uart_byte = 8'h0D;
-                8: uart_byte = 8'h0A;
+                0: uart_byte="D"; 1: uart_byte="I";
+                2: uart_byte="F"; 3: uart_byte="I";
+                4: uart_byte="C"; 5: uart_byte="I";
+                6: uart_byte="L"; 7: uart_byte=8'h0D;
+                8: uart_byte=8'h0A;
             endcase
         end
 
         MSG_CORRECTA: begin
             case (index)
-                0: uart_byte = "C";
-                1: uart_byte = "O";
-                2: uart_byte = "R";
-                3: uart_byte = "R";
-                4: uart_byte = "E";
-                5: uart_byte = "C";
-                6: uart_byte = "T";
-                7: uart_byte = "A";
-                8: uart_byte = 8'h0D;
-                9: uart_byte = 8'h0A;
+                0: uart_byte="C"; 1: uart_byte="O";
+                2: uart_byte="R"; 3: uart_byte="R";
+                4: uart_byte="E"; 5: uart_byte="C";
+                6: uart_byte="T"; 7: uart_byte="A";
+                8: uart_byte=8'h0D; 9: uart_byte=8'h0A;
             endcase
         end
 
         MSG_INCORRECTA: begin
             case (index)
-                0:  uart_byte = "I";
-                1:  uart_byte = "N";
-                2:  uart_byte = "C";
-                3:  uart_byte = "O";
-                4:  uart_byte = "R";
-                5:  uart_byte = "R";
-                6:  uart_byte = "E";
-                7:  uart_byte = "C";
-                8:  uart_byte = "T";
-                9:  uart_byte = "A";
-                10: uart_byte = 8'h0D;
-                11: uart_byte = 8'h0A;
+                0: uart_byte="I"; 1: uart_byte="N";
+                2: uart_byte="C"; 3: uart_byte="O";
+                4: uart_byte="R"; 5: uart_byte="R";
+                6: uart_byte="E"; 7: uart_byte="C";
+                8: uart_byte="T"; 9: uart_byte="A";
+                10: uart_byte=8'h0D; 11: uart_byte=8'h0A;
             endcase
         end
 
         MSG_GANASTE: begin
             case (index)
-                0: uart_byte = "G";
-                1: uart_byte = "A";
-                2: uart_byte = "N";
-                3: uart_byte = "A";
-                4: uart_byte = "S";
-                5: uart_byte = "T";
-                6: uart_byte = "E";
-                7: uart_byte = 8'h0D;
-                8: uart_byte = 8'h0A;
+                0: uart_byte="G"; 1: uart_byte="A";
+                2: uart_byte="N"; 3: uart_byte="A";
+                4: uart_byte="S"; 5: uart_byte="T";
+                6: uart_byte="E"; 7: uart_byte=8'h0D;
+                8: uart_byte=8'h0A;
             endcase
         end
 
         MSG_PERDISTE: begin
             case (index)
-                0: uart_byte = "P";
-                1: uart_byte = "E";
-                2: uart_byte = "R";
-                3: uart_byte = "D";
-                4: uart_byte = "I";
-                5: uart_byte = "S";
-                6: uart_byte = "T";
-                7: uart_byte = "E";
-                8: uart_byte = 8'h0D;
-                9: uart_byte = 8'h0A;
+                0: uart_byte="P"; 1: uart_byte="E";
+                2: uart_byte="R"; 3: uart_byte="D";
+                4: uart_byte="I"; 5: uart_byte="S";
+                6: uart_byte="T"; 7: uart_byte="E";
+                8: uart_byte=8'h0D; 9: uart_byte=8'h0A;
             endcase
         end
     endcase
 end
 endfunction
 
-function automatic logic [7:0] lcd_facil_byte(input integer index);
+function automatic logic [7:0] facil_char(input integer i);
 begin
-    case (index)
-        0: lcd_facil_byte = "F";
-        1: lcd_facil_byte = "A";
-        2: lcd_facil_byte = "C";
-        3: lcd_facil_byte = "I";
-        4: lcd_facil_byte = "L";
-        default: lcd_facil_byte = 8'h00;
+    case (i)
+        0: facil_char="F"; 1: facil_char="A";
+        2: facil_char="C"; 3: facil_char="I";
+        4: facil_char="L";
+        default: facil_char=8'h20;
     endcase
 end
 endfunction
 
-function automatic logic [7:0] lcd_win_byte(input integer index);
+function automatic logic [7:0] dificil_char(input integer i);
 begin
-    case (index)
-        0: lcd_win_byte = "G";
-        1: lcd_win_byte = "A";
-        2: lcd_win_byte = "N";
-        3: lcd_win_byte = "A";
-        4: lcd_win_byte = "S";
-        5: lcd_win_byte = "T";
-        6: lcd_win_byte = "E";
-        default: lcd_win_byte = 8'h00;
+    case (i)
+        0: dificil_char="D"; 1: dificil_char="I";
+        2: dificil_char="F"; 3: dificil_char="I";
+        4: dificil_char="C"; 5: dificil_char="I";
+        6: dificil_char="L";
+        default: dificil_char=8'h20;
+    endcase
+end
+endfunction
+
+function automatic logic [7:0] intentos_char(
+    input integer i,
+    input logic [3:0] restantes
+);
+begin
+    case (i)
+        0: intentos_char="I";
+        1: intentos_char="N";
+        2: intentos_char="T";
+        3: intentos_char="E";
+        4: intentos_char="N";
+        5: intentos_char="T";
+        6: intentos_char="O";
+        7: intentos_char="S";
+        8: intentos_char=":";
+        9: intentos_char=8'h30 + restantes;
+        default: intentos_char=8'h20;
+    endcase
+end
+endfunction
+
+function automatic logic [7:0] win_char(input integer i);
+begin
+    case (i)
+        0: win_char="G"; 1: win_char="A";
+        2: win_char="N"; 3: win_char="A";
+        4: win_char="S"; 5: win_char="T";
+        6: win_char="E";
+        default: win_char=8'h20;
+    endcase
+end
+endfunction
+
+function automatic logic [7:0] lose_char(input integer i);
+begin
+    case (i)
+        0: lose_char="P"; 1: lose_char="E";
+        2: lose_char="R"; 3: lose_char="D";
+        4: lose_char="I"; 5: lose_char="S";
+        6: lose_char="T"; 7: lose_char="E";
+        default: lose_char=8'h20;
     endcase
 end
 endfunction
@@ -208,10 +214,8 @@ begin
     uart_rx     = 1'b1;
 
     repeat (10) @(posedge clk);
-
     @(negedge clk);
     reset = 1'b0;
-
     repeat (10) @(posedge clk);
 end
 endtask
@@ -246,7 +250,7 @@ begin
     uart_rx = 1'b0;
     #(BIT_TIME);
 
-    for (i = 0; i < 8; i = i + 1) begin
+    for (i=0; i<8; i=i+1) begin
         uart_rx = data[i];
         #(BIT_TIME);
     end
@@ -260,10 +264,9 @@ task automatic uart_receive_byte(output logic [7:0] data);
     integer i;
 begin
     @(negedge uart_tx);
-
     #(BIT_TIME + BIT_TIME/2);
 
-    for (i = 0; i < 8; i = i + 1) begin
+    for (i=0; i<8; i=i+1) begin
         data[i] = uart_tx;
         #(BIT_TIME);
     end
@@ -277,24 +280,24 @@ endtask
 
 task automatic expect_uart_message(input logic [2:0] id);
     integer i;
-    integer errores_inicio;
+    integer inicio;
     logic [7:0] recibido;
 begin
-    errores_inicio = errores;
+    inicio = errores;
 
-    for (i = 0; i < uart_length(id); i = i + 1) begin
+    for (i=0; i<uart_length(id); i=i+1) begin
         uart_receive_byte(recibido);
 
-        if (recibido !== uart_byte(id, i)) begin
+        if (recibido !== uart_byte(id,i)) begin
             $display(
                 "FAIL - UART ID %0d byte %0d: recibido %02h esperado %02h",
-                id, i, recibido, uart_byte(id, i)
+                id, i, recibido, uart_byte(id,i)
             );
             errores = errores + 1;
         end
     end
 
-    if (errores == errores_inicio)
+    if (errores == inicio)
         $display("PASS - Mensaje UART ID %0d correcto", id);
 end
 endtask
@@ -323,79 +326,144 @@ begin
 end
 endtask
 
-task automatic expect_lcd_facil;
+task automatic expect_facil;
     integer i;
-    integer errores_inicio;
+    integer inicio;
 begin
-    errores_inicio = errores;
+    inicio = errores;
 
-    for (i = 0; i < 5; i = i + 1)
-        expect_lcd_byte(lcd_facil_byte(i));
+    for (i=0; i<5; i=i+1)
+        expect_lcd_byte(facil_char(i));
 
-    if (errores == errores_inicio)
+    if (errores == inicio)
         $display("PASS - LCD muestra FACIL");
 end
 endtask
 
-task automatic expect_lcd_dashes(input integer cantidad);
+task automatic expect_dificil;
     integer i;
-    integer errores_inicio;
+    integer inicio;
 begin
-    errores_inicio = errores;
+    inicio = errores;
 
-    for (i = 0; i < cantidad; i = i + 1)
-        expect_lcd_byte("-");
+    for (i=0; i<7; i=i+1)
+        expect_lcd_byte(dificil_char(i));
 
-    if (errores == errores_inicio)
-        $display("PASS - LCD muestra %0d guiones", cantidad);
+    if (errores == inicio)
+        $display("PASS - LCD muestra DIFICIL");
 end
 endtask
 
-task automatic expect_lcd_ganaste;
-    integer i;
-    integer errores_inicio;
+task automatic expect_word(
+    input logic [7:0] c0,
+    input logic [7:0] c1,
+    input logic [7:0] c2,
+    input logic [7:0] c3
+);
+    integer inicio;
 begin
-    errores_inicio = errores;
+    inicio = errores;
 
-    for (i = 0; i < 7; i = i + 1)
-        expect_lcd_byte(lcd_win_byte(i));
+    expect_lcd_byte(c0);
+    expect_lcd_byte(c1);
+    expect_lcd_byte(c2);
+    expect_lcd_byte(c3);
 
-    if (errores == errores_inicio)
+    if (errores == inicio)
+        $display(
+            "PASS - LCD palabra %c%c%c%c",
+            c0,c1,c2,c3
+        );
+end
+endtask
+
+task automatic expect_intentos(input logic [3:0] restantes);
+    integer i;
+    integer inicio;
+begin
+    inicio = errores;
+
+    for (i=0; i<10; i=i+1)
+        expect_lcd_byte(intentos_char(i,restantes));
+
+    if (errores == inicio)
+        $display(
+            "PASS - LCD muestra INTENTOS:%0d",
+            restantes
+        );
+end
+endtask
+
+task automatic expect_ganaste;
+    integer i;
+    integer inicio;
+begin
+    inicio = errores;
+
+    for (i=0; i<7; i=i+1)
+        expect_lcd_byte(win_char(i));
+
+    if (errores == inicio)
         $display("PASS - LCD muestra GANASTE");
 end
 endtask
 
-task automatic send_wrong(input logic [7:0] letra);
+task automatic expect_perdiste;
+    integer i;
+    integer inicio;
+begin
+    inicio = errores;
+
+    for (i=0; i<8; i=i+1)
+        expect_lcd_byte(lose_char(i));
+
+    if (errores == inicio)
+        $display("PASS - LCD muestra PERDISTE");
+end
+endtask
+
+task automatic send_wrong(
+    input logic [7:0] letra,
+    input logic [3:0] restantes
+);
 begin
     fork
         expect_uart_message(MSG_INCORRECTA);
+
+        begin
+            expect_word("-","-","-","-");
+            expect_intentos(restantes);
+        end
+
         uart_send_byte(letra);
     join
 end
 endtask
 
 initial begin
-    clk             = 1'b0;
-    reset           = 1'b1;
-    BTN_SEL_RAW     = 1'b0;
-    BTN_OK_RAW      = 1'b0;
-    uart_rx         = 1'b1;
-    errores         = 0;
+    clk         = 1'b0;
+    reset       = 1'b1;
+    BTN_SEL_RAW = 1'b0;
+    BTN_OK_RAW  = 1'b0;
+    uart_rx     = 1'b1;
+
+    errores   = 0;
+    test_done = 1'b0;
 
     $display("========================================");
-    $display("PRUEBA FINAL TOP_GLOBAL");
+    $display("PRUEBA FINAL TOP_GLOBAL ACTUALIZADO");
     $display("========================================");
 
     reset_system();
 
     $display("PRUEBA INICIALIZACION");
 
-    expect_lcd_facil();
+    expect_facil();
 
     if (led == 16'h0001)
         $display("PASS - LED seleccion de modo");
     else begin
-        $display("FAIL - LED inicial = %04h", led);
+        $display("FAIL - LED inicial = %04h",led);
         errores = errores + 1;
     end
 
@@ -407,14 +475,19 @@ initial begin
 
     fork
         expect_uart_message(MSG_FACIL);
-        expect_lcd_dashes(4);
+
+        begin
+            expect_word("-","-","-","-");
+            expect_intentos(4'd6);
+        end
+
         press_ok();
     join
 
     repeat (10) @(posedge clk);
 
     if (!dut.hardmode)
-        $display("PASS - Modo facil");
+        $display("PASS - Modo facil activo");
     else begin
         $display("FAIL - hardmode deberia ser 0");
         errores = errores + 1;
@@ -431,7 +504,7 @@ initial begin
     end
 
     if (dut.TimerS == 6'd60)
-        $display("PASS - Timer = 60");
+        $display("PASS - Timer facil = 60");
     else begin
         $display(
             "FAIL - Timer esperado 60, obtenido %0d",
@@ -443,18 +516,20 @@ initial begin
     if (led == 16'h0002)
         $display("PASS - LED partida activa");
     else begin
-        $display("FAIL - LED partida = %04h", led);
+        $display("FAIL - LED partida = %04h",led);
         errores = errores + 1;
     end
 
+    $display("========================================");
     $display("PRUEBA LETRA A");
+    $display("========================================");
 
     fork
         expect_uart_message(MSG_CORRECTA);
 
         begin
-            expect_lcd_byte("A");
-            expect_lcd_byte("A");
+            expect_word("-","A","-","A");
+            expect_intentos(4'd6);
         end
 
         uart_send_byte("A");
@@ -466,16 +541,24 @@ initial begin
         $display("PASS - A revela ambas posiciones");
     else begin
         $display(
-            "FAIL - LetrasRestantes = %0d",
+            "FAIL - LetrasRestantes esperado 2, obtenido %0d",
             dut.LetrasRestantes
         );
         errores = errores + 1;
     end
 
+    $display("========================================");
     $display("PRUEBA LETRA Z");
+    $display("========================================");
 
     fork
         expect_uart_message(MSG_INCORRECTA);
+
+        begin
+            expect_word("-","A","-","A");
+            expect_intentos(4'd5);
+        end
+
         uart_send_byte("Z");
     join
 
@@ -484,15 +567,25 @@ initial begin
     if (dut.Fallos == 3'd1)
         $display("PASS - Fallos = 1");
     else begin
-        $display("FAIL - Fallos = %0d", dut.Fallos);
+        $display(
+            "FAIL - Fallos esperado 1, obtenido %0d",
+            dut.Fallos
+        );
         errores = errores + 1;
     end
 
+    $display("========================================");
     $display("PRUEBA LETRA C");
+    $display("========================================");
 
     fork
         expect_uart_message(MSG_CORRECTA);
-        expect_lcd_byte("C");
+
+        begin
+            expect_word("C","A","-","A");
+            expect_intentos(4'd5);
+        end
+
         uart_send_byte("C");
     join
 
@@ -502,13 +595,15 @@ initial begin
         $display("PASS - Queda una letra");
     else begin
         $display(
-            "FAIL - LetrasRestantes = %0d",
+            "FAIL - LetrasRestantes esperado 1, obtenido %0d",
             dut.LetrasRestantes
         );
         errores = errores + 1;
     end
 
+    $display("========================================");
     $display("PRUEBA VICTORIA");
+    $display("========================================");
 
     fork
         begin
@@ -517,8 +612,9 @@ initial begin
         end
 
         begin
-            expect_lcd_byte("S");
-            expect_lcd_ganaste();
+            expect_word("C","A","S","A");
+            expect_intentos(4'd5);
+            expect_ganaste();
         end
 
         uart_send_byte("S");
@@ -534,15 +630,15 @@ initial begin
     end
 
     if (led == 16'h0004)
-        $display("PASS - LED resultado");
+        $display("PASS - LED resultado victoria");
     else begin
-        $display("FAIL - LED resultado = %04h", led);
+        $display("FAIL - LED resultado = %04h",led);
         errores = errores + 1;
     end
 
     if ((dut.peri_inst.wins_tens == 4'd0) &&
         (dut.peri_inst.wins_ones == 4'd1))
-        $display("PASS - Victorias = 01");
+        $display("PASS - Contador de victorias = 01");
     else begin
         $display(
             "FAIL - Victorias = %0d%0d",
@@ -570,6 +666,8 @@ initial begin
         $display("FAIL - Hardmode no seleccionado");
         errores = errores + 1;
     end
+
+    expect_dificil();
 
     fork
         expect_uart_message(MSG_DIFICIL);
@@ -609,21 +707,35 @@ initial begin
 
     force dut.game_inst.word_index = 6'd1;
 
+    expect_facil();
+
     fork
         expect_uart_message(MSG_FACIL);
+
+        begin
+            expect_word("-","-","-","-");
+            expect_intentos(4'd6);
+        end
+
         press_ok();
     join
 
-    send_wrong("B");
-    send_wrong("D");
-    send_wrong("E");
-    send_wrong("F");
-    send_wrong("G");
+    send_wrong("B",4'd5);
+    send_wrong("D",4'd4);
+    send_wrong("E",4'd3);
+    send_wrong("F",4'd2);
+    send_wrong("G",4'd1);
 
     fork
         begin
             expect_uart_message(MSG_INCORRECTA);
             expect_uart_message(MSG_PERDISTE);
+        end
+
+        begin
+            expect_word("-","-","-","-");
+            expect_intentos(4'd0);
+            expect_perdiste();
         end
 
         uart_send_byte("H");
@@ -672,14 +784,17 @@ initial begin
 
     $display("========================================");
 
+    test_done = 1'b1;
     $finish;
 end
 
 initial begin
-    #500_000_000;
+    #1_000_000_000;
 
-    $display("FAIL - TIMEOUT DE SIMULACION TOP_GLOBAL");
-    $finish;
+    if (!test_done) begin
+        $display("FAIL - TIMEOUT DE SIMULACION TOP_GLOBAL");
+        $finish;
+    end
 end
 
 endmodule
