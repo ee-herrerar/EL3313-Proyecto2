@@ -19,7 +19,6 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
 module FSM_LCD_HD44780(
     input clk,
     input reset,
@@ -38,33 +37,42 @@ module FSM_LCD_HD44780(
 
     output logic done,
     output logic busy,
-    output logic rs,
     output logic rw,
+    
     output str_60us, 
     output str_5ms, 
     output str_200us, 
     output str_100ms,
-    output reg [7:0] temp_reg
+    
+    // Salidas hacia la interfaz del perifÃ©rico
+    output logic [1:0]  addr_o,
+    output logic write_enable_o,
+    output logic [31:0] wdata_o
+
     );
 
 // STATE DECLARATION -----------------------------------------------------------------
 
-typedef enum logic [3:0] {
-           POWER_ON = 4'b0000,
-           FUNCTION_SET_I = 4'b0001,
-           FUNCTION_SET_II = 4'b0010,
-           FUNCTION_SET_III = 4'b0011,
-           FUNCTION_SET_CONFIGURATION = 4'b0100,
-           DISPLAY_OFF = 4'b0101,
-           CLEAR = 4'b0110,
-           ENTRY_MODE_SET = 4'b0111,
-           DISPLAY_ON = 4'b1000,
-           WAIT_ = 4'b1001,
-           INC_RAN = 4'b1010,
-           WRITE_INC = 4'b1011,
-           SET_ADDRESS = 4'b1100,
-           WRITE_RAN = 4'b1101,
-           CLEAR_WRITE = 4'b1110
+typedef enum logic [4:0] {
+           POWER_ON = 5'b00000,
+           FUNCTION_SET_I = 5'b00001,
+           FUNCTION_SET_II = 5'b00010,
+           FUNCTION_SET_III = 5'b00011,
+           FUNCTION_SET_CONFIGURATION = 5'b00100,
+           DISPLAY_OFF = 5'b00101,
+           CLEAR = 5'b00110,
+           ENTRY_MODE_SET = 5'b00111,
+           DISPLAY_ON = 5'b01000,
+           WAIT_ = 5'b01001,
+           INC_RAN = 5'b01010,
+           WRITE_INC = 5'b01011,
+           SET_ADDRESS = 5'b01100,
+           WRITE_RAN = 5'b01101,
+           CLEAR_WRITE = 5'b01110,
+           CONTROL_REG_1 = 5'b01111,
+           CONTROL_REG_2 = 5'b10000,
+           CONTROL_REG_3 = 5'b10001,
+           CONTROL_REG_4 = 5'b10010
 } state_t;      
 
 
@@ -72,6 +80,8 @@ typedef enum logic [3:0] {
 
 state_t current_state, next_state;
 
+logic [31:0] data_reg;
+logic [31:0] control_reg;
 
 logic [3:0] coincount; // Contador de coincidencias para la escritura en modo aleatorio.
 
@@ -103,79 +113,110 @@ end
  always @* begin
     next_state = current_state; // Por defecto
 
-    busy = 1'b1;
+    control_reg [8]= 1'b1;
     done = 1'b0;
-    rs = 1'b0;
-    temp_reg = 8'b0; 
+    control_reg [1] = 1'b0;
+    
+    // Valores por defecto para evitar latches
+    write_enable_o = 1'b0;
+    addr_o = 2'b00;
+    wdata_o = 32'd0;
 
     case (current_state)
 
-    // ETAPA DE INICIALIZACIÓN DEL LCD................................................
-    // Tiempo de espera de 100ms para que el LCD se estabilice después del encendido.
+    // ETAPA DE INICIALIZACIÃ“N DEL LCD................................................
+    // Tiempo de espera de 100ms para que el LCD se estabilice despuÃ©s del encendido.
         POWER_ON:  begin
-        busy = 1'b1;                                    // Indica que el módulo está ocupado durante la inicialización.
-        done = 1'b0;                                    // La inicialización no ha terminado.                                  
+        control_reg [8]= 1'b1;                   // Indica que el mÃ³dulo estÃ¡ ocupado durante la inicializaciÃ³n.                                                 // La inicializaciÃ³n no ha terminado.                                                 
             if (flag_100ms)
-                next_state = FUNCTION_SET_I;
+                next_state = CONTROL_REG_1;
             else
                 next_state = POWER_ON;
         end
-    // Inicialización del LCD por instrucciones según el datasheet del HD44780.
+        CONTROL_REG_1: begin
+            control_reg [1]= 1'b0; // Modo de escritura
+            addr_o = 2'b00;
+            wdata_o = control_reg;
+            write_enable_o = 1'b1;
+            next_state = FUNCTION_SET_I;
+        end
+    // InicializaciÃ³n del LCD por instrucciones segÃºn el datasheet del HD44780.
         FUNCTION_SET_I: begin
-            rs = 1'b0;
-            temp_reg = 8'b00110000;
+            data_reg [7:0]= 8'b00110000;
+            addr_o = 2'b01;
+            wdata_o = data_reg;
+            write_enable_o = 1'b1;
             if (flag_5ms)
                 next_state = FUNCTION_SET_II;
         end
         FUNCTION_SET_II: begin
-            rs = 1'b0;
-            temp_reg = 8'b00110000;
+            data_reg [7:0] = 8'b00110000;
+            addr_o = 2'b01;
+            wdata_o = data_reg;
+            write_enable_o = 1'b1;
             if (flag_200us)
                 next_state = FUNCTION_SET_III;
         end
         FUNCTION_SET_III: begin
-            rs = 1'b0;
-            temp_reg = 8'b00110000;
+            data_reg [7:0] = 8'b00110000;
+            addr_o = 2'b01;
+            wdata_o = data_reg;
+            write_enable_o = 1'b1;
             if (flag_200us)
                 next_state = FUNCTION_SET_CONFIGURATION;
         end
-    // Configuracion del LCD: 8 bits, 2 líneas, fuente 5x8.
+    // Configuracion del LCD: 8 bits, 2 lÃ­neas, fuente 5x8.
         FUNCTION_SET_CONFIGURATION: begin
-            rs = 1'b0; 
-            temp_reg = 8'b00111000;
+            data_reg [7:0] = 8'b00111000;
+            addr_o = 2'b01;
+            wdata_o = data_reg;
+            write_enable_o = 1'b1;
             if (flag_60us)
                 next_state = DISPLAY_OFF;
         end
         DISPLAY_OFF: begin
-            rs = 1'b0;
-            temp_reg = 8'b00001000;
+            data_reg [7:0] = 8'b00001000;
+            addr_o = 2'b01;
+            wdata_o = data_reg;
+            write_enable_o = 1'b1;
             if (flag_60us)
                 next_state = CLEAR;
         end
         CLEAR: begin
-            rs = 1'b0;
-            temp_reg = 8'b00000001;
+            data_reg [7:0] = 8'b00000001;
+            addr_o = 2'b01;
+            wdata_o = data_reg;
+            write_enable_o = 1'b1;
             if (flag_5ms)
                 next_state = ENTRY_MODE_SET;
         end
-    // Configuración del modo de entrada: incremento, sin desplazamiento de pantalla.            
+    // ConfiguraciÃ³n del modo de entrada: incremento, sin desplazamiento de pantalla.            
         ENTRY_MODE_SET: begin
-            rs = 1'b0;
-            temp_reg = 8'b00000110;
+            data_reg [7:0] = 8'b00000110;
+            addr_o = 2'b01;
+            wdata_o = data_reg;
+            write_enable_o = 1'b1;
             if (flag_60us)
                 next_state = DISPLAY_ON;
         end
         DISPLAY_ON: begin
-            rs = 1'b0;
-            temp_reg = 8'b00001100;
+            data_reg [7:0] = 8'b00001100;
+            addr_o = 2'b01;
+            wdata_o = data_reg;
+            write_enable_o = 1'b1;
             if (flag_60us)
                 next_state = WAIT_;
         end
 
-    // FIN DE LA ETAPA DE INICIALIZACIÓN DEL LCD......................................
-    // Espera de comandos del módulo externo.
+    // FIN DE LA ETAPA DE INICIALIZACIÃ“N DEL LCD......................................
+    // Espera de comandos del mÃ³dulo externo.
         WAIT_: begin                          
-        busy = 1'b0;                            // Indica que el módulo está listo para recibir comandos.
+            control_reg [8]= 1'b0;                            // Indica que el mÃ³dulo estÃ¡ listo para recibir comandos.
+            control_reg [0]= start;               
+            control_reg [2]= clear_write;                  
+            addr_o = 2'b00;
+            wdata_o = control_reg;                                    // Indica que la operaciÃ³n ha terminado.
+            done = 1'b1;
             if (start)
                 next_state = INC_RAN;
             else if (clear_write)
@@ -187,39 +228,68 @@ end
     // Se decide si la escritura sera en modo incremento o en modo direccionamiento aleatorio.
         INC_RAN: begin
             if (mode)
-                next_state = WRITE_INC;
+                next_state = CONTROL_REG_2;
             else
-                next_state = SET_ADDRESS;
+                next_state = CONTROL_REG_3;
         end
-
+        CONTROL_REG_2: begin
+            control_reg [1]= 1'b1; 
+            addr_o = 2'b00;
+            wdata_o = control_reg;
+            write_enable_o = 1'b1;
+            next_state = WRITE_INC;
+        end
     // Escritura de datos en modo incremento.
         WRITE_INC: begin
-        rs = 1'b1;
-        temp_reg = data_byte;
+            data_reg [7:0] = data_byte;
+            addr_o = 2'b01;
+            wdata_o  = data_reg;
+            write_enable_o = 1'b1;
             if (flag_60us)
                 next_state = WAIT_;
         end
 
+        CONTROL_REG_3: begin
+            control_reg [1]= 1'b0;
+            addr_o = 2'b00;
+            wdata_o = control_reg;
+            write_enable_o = 1'b1;
+            next_state = SET_ADDRESS;    
+        end   
     // Escritura de datos en modo direccionamiento aleatorio.
         SET_ADDRESS: begin
-        rs = 1'b0;
-        temp_reg = (coincount > 0) ? (8'h80 | direccion[coincount - 1]) : 8'h80;
+            data_reg [7:0] = (coincount > 0) ? (8'h80 | direccion[coincount - 1]) : 8'h80;
+            addr_o = 2'b01;
+            wdata_o = data_reg;
+            write_enable_o = 1'b1;
             if (flag_60us)
-                next_state = WRITE_RAN;
+                next_state = CONTROL_REG_4;
+        end
+
+        CONTROL_REG_4: begin
+            control_reg [1]= 1'b1;
+            addr_o = 2'b00;
+            wdata_o = control_reg;
+            write_enable_o = 1'b1;
+            next_state = WRITE_RAN;   
         end
 
         WRITE_RAN: begin
-        rs = 1'b1;
-        temp_reg = data_byte;
+            data_reg [7:0] = data_byte;
+            addr_o = 2'b01;
+            wdata_o = data_reg;
+            write_enable_o = 1'b1;
             if (flag_60us)
                 if (coincount > 4'b1) 
                     next_state = SET_ADDRESS;
                 else
-                next_state = WAIT_;
+                    next_state = WAIT_;
         end
-        CLEAR_WRITE: begin
-        rs = 1'b0;
-        temp_reg = 8'b00000001;
+        CLEAR_WRITE: begin        
+            data_reg [7:0] = 8'b00000001;
+            addr_o = 2'b01;
+            wdata_o  = data_reg;
+            write_enable_o = 1'b1;
             if (flag_5ms)
                 next_state = WAIT_;
         end       
