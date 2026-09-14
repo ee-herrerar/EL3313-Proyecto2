@@ -1,12 +1,68 @@
 import sys
 import time
 import threading
+from dataclasses import dataclass
 import serial
 from serial.tools import list_ports
 
 # Configuración por defecto de la UART según las especificaciones del proyecto
 BAUD_RATE = 115200
 TIMEOUT_SEC = 0.5
+
+
+@dataclass
+class GameState:
+    mode: str = ""
+    word_length: int = 0
+    pattern: str = ""
+    failures: int = 0
+    last_letter: str = ""
+    last_result: str = ""
+    final_result: str = ""
+    final_cause: str = ""
+
+
+def is_uppercase_letter(value):
+    return len(value) == 1 and "A" <= value <= "Z"
+
+
+def parse_frame(frame, state):
+    fields = frame.strip().split(",")
+    if not fields:
+        return False
+
+    if fields[0] == "@S" and len(fields) == 3:
+        state.mode = fields[1]
+        state.word_length = int(fields[2])
+        return True
+
+    if fields[0] == "@R" and len(fields) == 5:
+        state.last_letter = fields[1]
+        state.last_result = fields[2]
+        state.pattern = fields[3]
+        state.failures = int(fields[4])
+        return True
+
+    if fields[0] == "@F" and len(fields) == 3:
+        state.final_result = fields[1]
+        state.final_cause = fields[2]
+        return True
+
+    return False
+
+
+def display_frame(frame, state):
+    try:
+        if parse_frame(frame, state):
+            print(f"\n[FPGA -> PC]: {frame}")
+            if state.pattern:
+                print(f"  Word: {state.pattern} | Failed attempts: {state.failures}")
+            if state.final_result:
+                print(f"  Final result: {state.final_result} ({state.final_cause})")
+        else:
+            print(f"\n[FPGA -> PC]: {frame}")
+    except (TypeError, ValueError):
+        print(f"\n[FPGA -> PC]: invalid frame: {frame}")
 
 def listar_puertos():
     """Muestra los puertos serie disponibles en el sistema."""
@@ -25,6 +81,7 @@ def hilo_recepcion(ser, stop_event):
     y respuestas enviados por la FPGA vía UART.
     """
     buffer_rx = ""
+    state = GameState()
     while not stop_event.is_set():
         try:
             if ser.in_waiting > 0:
@@ -39,7 +96,7 @@ def hilo_recepcion(ser, stop_event):
                         linea, buffer_rx = buffer_rx.split('\n', 1)
                         linea = linea.strip()
                         if linea:
-                            print(f"\n[FPGA -> PC]: {linea}")
+                            display_frame(linea, state)
                             print("> Ingrese letra (A-Z): ", end="", flush=True)
                 except Exception as e:
                     print(f"\n[!] Error decodificando datos: {e}")
@@ -98,11 +155,10 @@ def main():
                 break
 
             # Validar entrada en la PC antes de enviar (Criterio de la especificación 3.4.4 / 3.5)
-            if len(entrada) != 1 or not entrada.isalpha():
+            if not is_uppercase_letter(entrada.upper()):
                 print("[!] Entrada inválida: Debe ingresar ÚNICAMENTE una letra (A-Z).")
                 continue
 
-            # Convertir a mayúscula para coincidir con el protocolo del juego
             letra_ascii = entrada.upper()
 
             # Transmitir letra por UART a la FPGA

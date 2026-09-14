@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module Uart_mm_tb;
+module Uart_periph_tb;
 
     // Parametros
     parameter SYS_CLK_FREQ = 100_000_000; // 100 MHz
@@ -27,7 +27,7 @@ module Uart_mm_tb;
     logic [1:0] addr_i;
 
     // Instancia del Modulo bajo prueba (DUT)
-    Uart_mm #(
+    Uart_periph #(
         .SYS_CLK_FREQ (SYS_CLK_FREQ),
         .BAUD_RATE    (BAUD_RATE),
         .DBIT         (DBIT),

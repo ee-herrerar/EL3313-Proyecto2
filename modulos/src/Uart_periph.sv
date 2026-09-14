@@ -1,5 +1,5 @@
 // Etapa Top con Mapeo de Memoria (MM) para UART
-module Uart_mm #(
+module Uart_periph #(
     parameter SYS_CLK_FREQ  = 100_000_000,   // Frecuencia del reloj del sistema (ej. 100 MHz Basys 3)
     parameter BAUD_RATE     = 115_200,       // Tasa de baudios deseada
     parameter DBIT          = 8,             // Cantidad de bits de datos (8)
