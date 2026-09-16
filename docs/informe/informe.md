@@ -21,6 +21,7 @@ Plataforma FPGA: Digilent Basys 3
 ## Simulación autoverificable
 
 ### TOP_GLOBAL
+```text
 ========================================
 PRUEBA TOP_PERI
 ========================================
@@ -58,6 +59,7 @@ PASS - Regreso a seleccion de modo
 ========================================
 TODAS LAS PRUEBAS DE TOP_PERI PASARON
 ========================================
+```
 
 ### TOP_LCD
 
