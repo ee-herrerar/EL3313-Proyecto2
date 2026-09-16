@@ -21,6 +21,83 @@ Plataforma FPGA: Digilent Basys 3
 ## Simulación autoverificable
 
 ### TOP_GLOBAL
+
+
+### TOP_LCD
+
+```text
+========================================
+PRUEBA NUEVO TOP_LCD
+========================================
+PRUEBA SELECCION FACIL
+
+PASS - LCD muestra FACIL
+
+PRUEBA CAMBIO A DIFICIL
+PASS - LCD muestra DIFICIL
+
+PRUEBA REGRESO A FACIL
+PASS - LCD muestra FACIL
+
+========================================
+PRUEBA INICIO DE JUEGO
+========================================
+PASS - Palabra LCD: ----
+PASS - LCD muestra INTENTOS:6
+
+========================================
+PRUEBA LETRA A
+========================================
+PASS - Palabra LCD: -A-A
+PASS - LCD muestra INTENTOS:6
+
+========================================
+PRUEBA FALLO
+========================================
+PASS - Palabra LCD: -A-A
+PASS - LCD muestra INTENTOS:5
+
+========================================
+PRUEBA LETRA C
+========================================
+PASS - Palabra LCD: CA-A
+PASS - LCD muestra INTENTOS:5
+
+========================================
+PRUEBA LETRA S
+========================================
+PASS - Palabra LCD: CASA
+PASS - LCD muestra INTENTOS:5
+
+========================================
+PRUEBA GANASTE
+========================================
+PASS - LCD muestra GANASTE
+
+========================================
+PRUEBA BUS DE 32 BITS
+========================================
+PASS - Escrituras al registro DATOS: 104
+PASS - Escrituras al registro CONTROL: 109
+PASS - Bit CLEAR utilizado por bus
+PASS - Bus genero escritura RS=1
+PASS - Bus genero escritura RS=0
+
+========================================
+PRUEBA PERDISTE
+========================================
+PASS - LCD muestra FACIL
+PASS - Palabra LCD: ----
+PASS - LCD muestra INTENTOS:6
+PASS - LCD muestra PERDISTE
+
+========================================
+TODAS LAS PRUEBAS DEL NUEVO TOP_LCD PASARON
+========================================
+```
+
+### TOP_PERI
+
 ```text
 ========================================
 PRUEBA TOP_PERI
@@ -60,10 +137,6 @@ PASS - Regreso a seleccion de modo
 TODAS LAS PRUEBAS DE TOP_PERI PASARON
 ========================================
 ```
-
-### TOP_LCD
-
-### TOP_PERI
 
 ### Top_Juego
 
