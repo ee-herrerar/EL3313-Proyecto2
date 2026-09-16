@@ -11,8 +11,13 @@ Plataforma FPGA: Digilent Basys 3
 
 ## Fundamentación teórica
 
+### Control de juego 
+### Perifericos 
+#### Uarth
+#### LCD
+#### Indicadores (leds, displays y buzzer)
 
-### Conclusión
+## Conclusión
 
 ### Fuentes
 [1]   David Harris y Sarah Harris. Digital Design and Computer Architecture. RISC-V
