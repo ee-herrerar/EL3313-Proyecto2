@@ -1,4 +1,4 @@
-## Informe técnico — Proyecto 2: Ahorcado: juego electr´onico FPGA / PC por enlace serial
+## Informe técnico — Proyecto 2: Ahorcado: juego electrónico FPGA / PC por enlace serial
 Curso: EL3313 Taller de Diseño Digital
 Semestre: II Semestre 2026
 Proyecto: Ahorcado: juego electronico FPGA / PC por enlace serial
@@ -6,7 +6,8 @@ Plataforma FPGA: Digilent Basys 3
 
 ## Resumen
 
-## Introduccion
+## Introducción
+
 
 
 ## Fundamentación teórica
@@ -16,6 +17,53 @@ Plataforma FPGA: Digilent Basys 3
 #### Uarth
 #### LCD
 #### Indicadores (leds, displays y buzzer)
+
+## Simulación autoverificable
+
+### TOP_GLOBAL
+========================================
+PRUEBA TOP_PERI
+========================================
+PASS - TOP_LCD integrado correctamente
+PRUEBA LED ESTADO INICIAL
+PASS - LED seleccion de modo
+PRUEBA DISPLAY TIMER = 45
+PASS - Conversion TimerS 45 -> 4,5
+PASS - Punto decimal apagado
+PRUEBA BTN_SEL
+PASS - BTN_SEL genero un pulso
+PRUEBA BTN_OK
+PASS - BTN_OK genero un pulso
+PRUEBA ESTADO PARTIDA
+PASS - LED partida activa
+PRUEBA SONIDO LETRA CORRECTA
+PASS - Pulso de letra correcta
+PASS - Buzzer correcto activo
+PRUEBA SONIDO LETRA INCORRECTA
+PASS - Pulso de letra incorrecta
+PASS - Buzzer incorrecto activo
+PRUEBA VICTORIA Y PRIORIDAD BUZZER
+PASS - Pulso de victoria
+PASS - Victoria tiene prioridad sobre sonido correcto
+PASS - LED resultado activo
+PASS - Contador de victorias = 01
+PASS - GameWin sostenido no cuenta doble
+PASS - Buzzer victoria activo
+PRUEBA DERROTA Y PRIORIDAD BUZZER
+PASS - Pulso de derrota
+PASS - Derrota tiene prioridad sobre sonido incorrecto
+PASS - LED resultado en derrota
+PASS - Buzzer derrota activo
+PASS - Regreso a seleccion de modo
+========================================
+TODAS LAS PRUEBAS DE TOP_PERI PASARON
+========================================
+
+### TOP_LCD
+
+### TOP_PERI
+
+### Top_Juego
 
 ## Conclusión
 
