@@ -4,6 +4,13 @@ Semestre: II Semestre 2026
 Proyecto: Ahorcado: juego electronico FPGA / PC por enlace serial
 Plataforma FPGA: Digilent Basys 3
 
+
+## Demostraciones
+[Demostración y explicación del código utilizado](https://youtu.be/8PXXbEcNKPs)
+
+[Demostración funcional de la FPGA y periféricos en juego](https://youtu.be/hoVYSvu8pEc)
+
+
 ## Resumen
 
 Este proyecto consistió en el diseño e implementación del juego Ahorcado sobre una tarjeta FPGA Basys 3, la cual actuó como núcleo de procesamiento y control de todo el sistema. La solución integra distintos módulos digitales encargados de elegir la palabra secreta, recibir y validar las letras ingresadas, administrar el tiempo de juego, llevar el conteo de aciertos y fallos, y definir si la partida termina en victoria o derrota. La FPGA se comunicó con el computador mediante UART, de modo que el usuario pudiera jugar desde el PC mientras toda la lógica de control se ejecutaba del lado de la FPGA.
