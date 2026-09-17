@@ -388,14 +388,14 @@ Para este diseño se plantea una maquina de estados que se divide en dos seccion
 Este proceso es parte del encendido por instrucciones que se indica en la pagina 5 de la hoja de datos del HD44780. La segunda parte inicia al llegar al WAIT, a partir de acá la maquina puede tomar tres caminos, el primero es el de limpiar la pantalla, el segundo es de escritura y el ultimo de enviar el cursor a inicio (home).
 
 <div align="center">
-<img src="./Imagenes/FSM LCD.png" width="500" height="500">
+<img src="./Imagenes/FSM LCD.png" width="500" height="700">
 </div>
 
 #### Máquina de estados control 
 La siguiente máquina de estados se encarga de escribir la información que le envía el top en la interfaz, respetando los tiempos de la LCD.
 
 <div align="center">
-<img src="./Imagenes/FSM CONTROL.png" width="500" height="500">
+<img src="./Imagenes/FSM CONTROL.png" width="500" height="700">
 </div>
 
 #### Máquina de estado Top
