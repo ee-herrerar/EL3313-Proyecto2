@@ -392,7 +392,7 @@ Este proceso es parte del encendido por instrucciones que se indica en la pagina
 </div>
 
 #### Máquina de estados control 
-La siguiente máquina de estados se encarga de escribir la información que le envía el top en la interfaz, respetando los tiempos de la LCD.
+La siguiente máquina de estados se encarga de escribir en la interfaz la información que le envía el top, respetando los tiempos de la LCD.
 
 <div align="center">
 <img src="./Imagenes/FSM CONTROL.png" width="500" height="700">
