@@ -31,9 +31,13 @@ El proyecto se desarrolló siguiendo una metodología modular, dividiendo el sis
 
 
 ## Fundamentación teórica
+## Control del juego
+El control del juego se basa en una máquina de estados finitos que gobierna cada una de las etapas de la partida. En este proyecto, la FPGA recibe la señal de inicio, selecciona la dificultad, carga la palabra secreta, valida cada letra ingresada por el usuario y actualiza el estado del juego en función de los aciertos, errores y tiempo restante. La lógica de control mantiene un seguimiento permanente de variables como la palabra activa, el número de intentos, las letras ya utilizadas y la condición de victoria o derrota. Esta estructura es especialmente útil en sistemas digitales porque permite organizar el comportamiento del juego de forma determinista, evitando errores de sincronización y simplificando la depuración y la prueba de cada etapa.
+Además, el control del juego integra temporizadores y contadores para gestionar la duración de la partida y el conteo de fallos. El sistema compara continuamente la información recibida con la palabra almacenada y decide si la letra es válida, repetida o incorrecta. Cuando se cumple una condición de finalización, la máquina de estados activa la señal correspondiente para indicar el resultado final y reinicia el flujo para una nueva partida. En conjunto, esta lógica convierte la FPGA en el núcleo inteligente del sistema, responsable de ejecutar las reglas del juego y coordinar la interacción con los demás periféricos.
 
-### Control de juego 
-### Perifericos 
+## Periféricos
+Los periféricos permiten que el usuario interactúe con el sistema y que la FPGA entregue información visual y auditiva durante la partida. En la Basys 3 se utilizan pulsadores para seleccionar la dificultad y confirmar acciones, LEDs para indicar estados del juego, un display de siete segmentos para mostrar valores numéricos asociados al tiempo o al conteo de intentos, y un buzzer para generar retroalimentación sonora ante aciertos, errores o finalización de la partida. Asimismo, el módulo LCD permite mostrar la palabra en progreso, el estado del juego y mensajes de victoria o derrota, aportando una interfaz más amigable para la interacción con el usuario.
+En este contexto, los periféricos cumplen dos funciones principales: capturar entradas del jugador y entregar retroalimentación al sistema. Los pulsadores actúan como interfaz de control, mientras que LEDs, display, buzzer y LCD sirven como indicadores del estado actual de la partida. Esta combinación de señales físicas y módulos digitales hace posible una experiencia de juego completa, donde el usuario puede jugar directamente sobre la FPGA y al mismo tiempo visualizar el progreso y los resultados de forma clara y operativa.
 
 #### Uart
 En este proyecto, la UART está organizada en varios módulos que separan responsabilidades y permiten una comunicación ordenada entre la FPGA y el entorno externo. 
