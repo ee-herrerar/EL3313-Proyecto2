@@ -4,3 +4,7 @@ Recreación de "Ahorcado", versión en juego electrónico vía FPGA / PC por enl
 ## Estructura repositorio
   * _docs:_ Contiene la documentación tanto de la propuesta de diseño como del informe técnico del trabajo.
   * _modulos:_ Contiene los códigos tanto en SystemVerilog, Constraints de Vivado y archivos requeridos para el funcionamiento del proyecto mismo basado en Basys 3 (Modelo utilizado: xc7a35ticpg236-1L).
+
+## Demostraciones
+[Demostración y explicación del código utilizado](https://youtu.be/8PXXbEcNKPs)
+[Demostración funcional de la FPGA y periféricos en juego](https://youtu.be/hoVYSvu8pEc)
