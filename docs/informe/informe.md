@@ -62,6 +62,15 @@ La UART recibe esos datos y el sistema digital los decodifica mediante estados i
 - un mensaje puede indicar victoria, derrota o actualización de puntaje.
 
 #### LCD
+El LCD con controlador HD44780 es un dispositivo de 16x2, 2 líneas y 16 espacios, el cual permite la escritura y lectura a través de sus pines. Este dispositivo posee unos dos registros de 8 bits, el registro de instrucciones y el registro de datos. El registro de instrucciones guarda códigos que se encargan de limpiar la pantalla, mover el cursor, direcciones para la DDRAM y la CGRAM. El registro de datos almacena loas datos para escribirlos en la pantalla o para ser leídos de la DDRAM o CGRAM.
+Para el manejo de este dispositivo se tomo como base la hoja de datos, la cual detalla la forma de transmitir instrucciones a través de los pines, el pin de rs se encarga de indicar si lo que se va a recibir es un comando o un dato (0 comando y 1 dato), rw indica si se va a escribir o leer (0 escribir y 1 leer), los pines D7-D0 se usan para enviar comandos o datos específicos, tanto para escribir caracteres de la CGRAM en la DDRAM como para funciones relacionadas a limpiar la pantalla y moverse a otro espacio de la pantalla, en la tabla 6 de la hoja de datos se pueden observar todas las instrucciones que se pueden realizar y en la tabla cuatro se observan los caracteres que el dispositivo tiene disponibles. 
+El diseño para los módulos y maquinas de estado se realizo a base de la hoja de datos, se realizo tomando en cuenta la secuencia que necesitaría el sistema para mostrar los caracteres necesarios en cada etapa, sus tiempos de espera y la información que seria necesaria. A continuación se encuentran sus modulos principales:
+
+- TOP_LCD: Es el modulo que coordina toda el flujo de escritura, identifica la etapa en la que se encuentra y a partir de sus entradas escribe la dificultad, la palabra con guiones y letras acertadas y el resultado de la partida.
+- FSM_LCD_HD44780: Se encarga de recibir la información de la interfaz y a partir de esta identifica el tipo de dato y realiza la espera necesaria para que el LCD ejecute la instrucción.
+- LCD_PERIPH: Se encarga de escribir y leer registros, esto se realiza a partir de los índices de addr y el estado de write_enable.
+- LCD_CONTROL: este se encarga de comunicar a los demás módulos con el TOP, este empaqueta los datos en registros de 32 bits y los envía a la interfaz, además de que le permite al top saber cuando la LCD esta ocupada realizando una operación. 
+
 #### Indicadores (leds, displays y buzzer)
 
 1. Display de siete segmentos
