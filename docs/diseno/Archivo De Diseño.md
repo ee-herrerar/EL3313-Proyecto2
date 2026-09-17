@@ -122,56 +122,89 @@ El numero de coincidencias es encargado de indicar cuales letras fueron acertada
 El Timer es el módulo encargado de controlar el tiempo disponible durante cada partida. Una vez que la palabra ha sido seleccionada y la partida entra en estado activo, el temporizador comienza una cuenta regresiva desde un valor determinado por la dificultad seleccionada Se tienen sugeridos un tiempo de 60 segundos para el modo fácil, y 45 para el modo difícil
 Mientras la partida se encuentre activa, el módulo disminuye el tiempo restante una vez por segundo. Cuando el contador llega a cero, genera una señal Timeout, la cual es enviada a la FSM para indicar que la partida debe finalizar con una derrota. El valor del tiempo restante también se envía al controlador de los displays de 7 segmentos para ser mostrado al jugador.
 
-### UART (Peripheral/Core)
+### UART
 ### Comunicación Serial (UART)
 Para establecer el enlace de comunicación bidireccional entre la FPGA y la PC (a través de la aplicación en Python), el sistema utiliza un periférico UART de 32 bits mapeado a memoria. Este bloque integra los núcleos de transmisión (`UART_tx`) y recepción (`UART_rx`) en VHDL con una interfaz SystemVerilog estandarizada.
 
-#### 1. Módulo Transmisor UART (`UART_tx.vhd`)
+#### UART_GENERADOR_BAUDIOS
+Entradas: clk y reset
 
-El núcleo `UART_tx` realiza la conversión de datos paralelos de 8 bits a una trama serie asíncrona estándar (1 bit de inicio, 8 bits de datos, 1 bit de parada, sin paridad).
+Salidas: s_tick
 
-* **Generación de Baud Rate (115200 Baudios):**
-  Para un reloj de sistema de 100 MHz, el divisor de reloj se calcula mediante la relación:
-  <!--
-  $$	ext{BAUD CLK TICKS} = rac{f_{	ext{clk}}}{	ext{Baud Rate}} = rac{100 	imes 10^6 	ext{ Hz}}{115200 	ext{ baud}}  pprox 868.06 -> 868$$
-  -->
-$$BAUD \ CLK \ TICKS = \frac{f_{clk}}{Baud \ Rate} = \frac{100 \times 10^6 \ Hz}{115200 \ baud} \approx 868.06 \implies 868$$
-* **Detección de Pulso y Transmisión:**
-  Un proceso interno (`tx_start_detector`) captura impulsos en la señal `tx_start`. Al detectarse la activación, el dato a transmitir se almacena en el registro `stored_data` y la FSM avanza secuencialmente enviando el bit de *START* (`'0'`), los 8 bits de datos desde el LSB hasta el MSB, y finaliza con el bit de *STOP* (`'1'`). La señal `tx_rdy` notifica la finalización del envío.
+Genera el pulso utilizado para la temporalización de los módulos de transmisión y recepción de la UART, utilizando específicamente 115200 baudios. 
 
----
+#### UART_RX
 
-#### 2. Módulo Receptor UART (`UART_rx.vhd`)
+Entradas: clk, reset, rx y s_tick
 
-El núcleo `UART_rx` procesa la señal serie de entrada `rx` y la convierte a un formato paralelo de 8 bits empleando un esquema de sobremuestreo por un factor de 16 ($16\times$).
+Salidas: dout[7:0] y rx_done_tick
 
-* **Generación de Reloj de Sobremuestreo ($16\times$):**
-  El número de ciclos de reloj de 100 MHz por cada pulso del reloj de sobremuestreo se define como:
-$$BAUD \ X16 \ CLK \ TICKS = \frac{f_{clk}}{Baud Rate} \times 16 = \frac{100 \times 10^6 Hz}{115200 \times 16} \approx 54.25 \implies 54$$
-* **Muestra en el Centro del Bit:**
-  Al detectar la transición a '0' del bit de *START*, la FSM del receptor espera 7 ciclos del reloj de sobremuestreo para posicionar el punto de muestreo exactamente en el centro de la duración del bit. Posteriormente, efectúa lecturas cada 16 pulsos del reloj sobremuestreado para reconstruir el byte completo en `rx_stored_data`. Cuando se valida el bit de *STOP*, se genera un pulso de un ciclo en `rx_data_rdy`.
+Recibe la trama de la UART y convierte los datos serializado es el byte paralelo de 8 bits, de esta manera, detecta el bit de inicio y realiza el muestreo de los 8 bits de la información y verifica cuando se recibe el bit que indica la parada. 
 
----
+#### UART_TX
 
-#### 3. Adaptación a la Interfaz de Bus y Comunicación con Python (`uart_sv_wrapper.sv`)
+Entradas: clk, reset, tx_start, s_tick y din[7:0]
 
-El *wrapper* SystemVerilog expone la interfaz de registros de 32 bits hacia la lógica de control de la FPGA y gestiona la interacción bidireccional con la PC a través de un puerto serie virtual sobre USB.
+Salidas: tx y tx_done_tick
 
-* **Mapa de Registros Mapeado a Memoria:**
+Recibe el byte paralelo de 8 bits y se encarga de convertirlo en la trama serializada.
 
-| Dirección (`addr_i[1:0]`) | Registro | Tipo | Descripción |
-| :---: | :---: | :---: | :--- |
-| `2'b00` | **DATOS 0** | R/W | `wdata_i[7:0]`: Byte cargado para transmisión por TX. |
-| `2'b01` | **DATOS 1** | RO | `rdata_o[7:0]`: Último byte recibido por RX. |
-| `2'b10` | **CONTROL** | R/W | `bit 0`: **send** (WC/P) - Dispara TX. Auto-limpiable en fin de TX.<br>`bit 1`: **new_rx** (R/W) - Flag de nuevo dato recibido. |
+#### UART_WRAPPER
 
-* **Protocolo de Enlace Bidireccional con Python (`pyserial`):**
-  La comunicación opera de forma bidireccional full-duplex sobre el enlace UART a 115200 baudios:
-  1. **Recepción desde Python (PC $\to$ FPGA):** La aplicación Python envía un carácter en formato ASCII que representa la letra adivinada por el usuario. Cuando el módulo `UART_rx` captura la trama completa, activa `rx_data_rdy`. El *wrapper* almacena el byte en `rx_data` y coloca la bandera `new_rx` en `1`. La FSM principal lee el registro `DATOS 1` y posteriormente escribe un `'0'` en el bit `new_rx` de `CONTROL` para limpiar el flag.
-  2. **Transmisión hacia Python (FPGA $\to$ PC):** La FSM de la FPGA escribe la respuesta (inicio de partida, acierto/error, patrón actualizado de la palabra, intentos restantes o resultado final) en el registro `DATOS 0` y setea el bit `send` (bit 0 del registro `CONTROL`). El *wrapper* emite un pulso en `tx_start_pulse` hacia `UART_tx` e inicia la serialización de la trama. Al terminar el envío, el hardware borra automáticamente el bit `send`.
----
-#### UART Periférico
-Este módulo se encarga de gestionar la comunicación bidireccional entre la FPGA y la aplicación ejecutada en la PC. Para esto utiliza el núcleo UART TX/RX proporcionado y expone una interfaz de registros hacia la lógica del juego. El periférico permite recibir las letras enviadas desde la PC y transmitir hacia esta la información correspondiente al estado de la partida.
+Entradas: clk, reset, rx, tx_start y din[7:0]
+
+Salida: tx, dout[7:0], rx_done_tick y tx_done_tick
+
+Es el encargado de integrar los 3 modulos anteriores en un solo dispositivo, proporcionando lo necesario para que se pueda realizar correctamente el enlace serial.
+
+#### UART_PERIPH
+
+Entradas: clk, reset, rx, addr, write_data y write_enable
+
+Salidas: tx y read_data
+
+Proporciona una interfaz de registros para el control de la UART
+
+#### UART_RX_CONTROL
+
+Entradas: clk, reset y uart_rdata
+
+Salidas: LetraUART[7:0] y NuevaLetra
+
+Consulta de manera constante el periférico de la UART para determinar si se recibió un nuevo byte. Cuando se recibe un dato nuevo, se almacena, limpia la flag y genera un pulso de aviso.
+
+#### UART_TX_CONTROL
+
+Entradas: clk, reset, data_byte y interfaz UART
+
+Salidas: Interfaz UART y done
+
+Convierte el identificador de mensaje en una secuencia de caracteres ASCII y los envia
+
+#### UART_MM_ARBITER
+
+Entradas: Interfaz de UART_TX_CONTROL y UART_RX_CONTROL, Datos del Periferico
+
+Salidas: Interfaz de UART_PERIPH
+
+Controla el acceso compartido a UART_PERIPH, ademas de determinar si el bus deberia ser utilizado por el RX o TX/
+
+UART_EVENTOS
+
+Entrdas: clk, reset, GameOn, hardmode, Fallos[2:0], LetrasReveladas[11:0], GameWin, GameLose y mensaje_busy
+
+Salidas: mensaje_start y mensaje_id[2:0]
+
+Detecta los eventos que el mismo juego produce y determina que mensaje tiene que ser enviado a la aplicación de la PC.
+
+UART_CONTROL
+
+Entradas: clk, reset, rx, mensaje_start y mensaje_id[2:0]
+
+Salidas: tx, LetraUART[7:0], NuevaLetra, mensaje_busy y mensaje_done
+
+Modulo principal de todo el sistema UART, el cual integra todo el resto de los módulos en un solo dispositivo, permitiendo asi la comunicación entre la PC y la FPGA
+
 
 ## Subsistema Periféricos
 ---
