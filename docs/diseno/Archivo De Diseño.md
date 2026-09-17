@@ -18,11 +18,13 @@
 </p>
 
 
-## PC App
+### PC App
 
----
-El PC App es el encargado de recibir los inputs directos del jugador, en este caso la letra seleccionada, validar que esta sea una entrada permitida y enviarla a la FPGA mediante la conexión física y el sistema de comunicación UART. Una vez recibida, la letra es procesada por la FPGA para aplicar la lógica correspondiente del juego. La aplicación también recibe desde la FPGA información sobre el estado de la partida y la muestra al jugador. Este programa se desarrollará exclusivamente en el lenguaje de programación Python.
-## Subsistema de Juego
+Entradas: letra seleccionada por el jugador y datos recibidos mediante UART desde la FPGA
+
+Salidas: letra validada enviada hacia la FPGA e información mostrada al jugador
+
+Aplicación desarrollada en Python encargada de recibir las letras ingresadas por el jugador, verificar que correspondan a una entrada válida y enviarlas hacia la FPGA mediante la comunicación UART. También recibe desde la FPGA mensajes relacionados con el desarrollo de la partida, como la dificultad seleccionada, si una letra fue correcta o incorrecta y el resultado final del juego, mostrando esta información al jugador.
 ---
 ---
 El subsistema de juego es el encargado de manejar la lógica principal del juego, además de gestionar la aplicación utilizada remotamente desde la PC. Este subsistema también se encarga de la comunicación entre la FPGA y la PC App mediante el periférico UART, permitiendo el envío y recepción de información a través de una conexión física por cable.
