@@ -377,26 +377,94 @@ h)
 ### LCD
 El subsistema LCD se encarga de mostrara mensajes en la pantalla. Durante la primera etapa de selección de dificultad, alterna entre los mensajes de “FACIL” y “DIFICIL”, permitiendo al usuario elegir entre ambas opciones, al finalizar esta etapa el subsistema se encarga de escribir guiones bajos que representen cada letra de la palabra escogida pseudoaleatoriamente. En la segunda etapa el juego ya ha empezado, aquí el sistema recibe una letra, la cantidad de veces que se repite y cada una de sus ubicaciones, de esta forma se va formando la palara conforme el usuario acierte. Finalmente, una vez el juego ha terminado, se le indica al usuario si perdió o gano.
 
-#### Máquina de estados
-La siguiente máquina de estados tiene la función de escribir los caracteres que reciba, se planea que funcione independientemente de forma que sea capaz de escribir lo que se necesita independientemente del estado en que se encuentre el juego.  La primera parte de la FSM corresponde a una inicialización por instrucciones igual a la presentada en la página 45 de la hoja de datos [], esta se realiza como precaución en caso de que el circuito interno de reinicio del HD44780 no funcione como debería, iniciando en “POWER ON” y terminando en “WAIT”, se planea que la secuencia de inicialización se realice una única vez al encender. Una vez termina la inicialización el sistema permanece en “WAIT” esperando recibir una señal de inicio, a partir de aquí hay dos modos, el modo de incremento (inc = 1) y el modo aleatorio (inc = 0). El modo de incremento se usa para aprovechar la función del LCD que incrementa una posición el cursor cada que se agrega un carácter, permitiendo una escritura fluida, este modo se usaría para escribir “FACIL”, “DIFICIL”, “GANO”, “PERDIO” y los guiones que sustituyen las letras de la palabra, en este modo se espera que el módulo reciba cada carácter sucesivamente cuando este no se encuentre ocupado o una señal que limpie la pantalla (clear) si fuese necesario. Por otro lado, esta el modo aleatorio, este esta pensado para ser usado una vez ha iniciado el juego debido a que el usuario puede introducir caracteres en un orden impredecible, en este modo primero se introduce una instrucción que mueve el cursor a la dirección de la letra y luego se escribe el carácter correspondiente, se repite este proceso hasta que el carácter este en todas las posiciones que le corresponde. 
+#### Maquinas de estados 
+#### Máquina de estados HD44780
+Para este diseño se plantea una maquina de estados que se divide en dos secciones importantes. La primera parte es la etapa de configuración del LCD tras el encendido, esta se realiza como prevención en caso de que el circuito interno que se encarga de la configuración inicial no funcione como se espera. La primera etapa inicia en POWER ON y termina en WAIT, durante este recorrido la LCD se configura de la siguiente forma:
+-	operación de 8 bits
+-	dos líneas
+-	cursor apagado
+-	incremento a la derecha del cursor
+-	fuente de 5x8 puntos
+Este proceso es parte del encendido por instrucciones que se indica en la pagina 5 de la hoja de datos del HD44780. La segunda parte inicia al llegar al WAIT, a partir de acá la maquina puede tomar tres caminos, el primero es el de limpiar la pantalla, el segundo es de escritura y el ultimo de enviar el cursor a inicio (home).
 
 <div align="center">
 <img src="./Imagenes/FSM LCD.png" width="500" height="500">
 </div>
 
-#### Nivel  1
-En el subsistema LCD se planea utilizar las siguientes señales de entrada y salida:
+#### Máquina de estados control 
+La siguiente máquina de estados se encarga de escribir la información que le envía el top en la interfaz, respetando los tiempos de la LCD.
 
 <div align="center">
-<img src="./Imagenes/NIVEL 1.png" width="500" height="500">
+<img src="./Imagenes/FSM CONTROL.png" width="500" height="500">
+</div>
+
+#### Máquina de estado Top
+La siguiente maquina de estados es la que se encarga de la coordinación de todas las secciones del subsistema LCD. A continuación se muestra una breve descripción de los estados: 
+
+| ESTADO | Función | 
+| :---------------------- :| :---- | 
+| WAIT_INIT | Esta sección espera la finalización de la inicialización por instrucciones e inicia |
+| DIFF_CLEAR_SEND | Verifica que el módulo de control se encuentre listo y limpia la pantalla |
+| DIFF_CLEAR_WAIT | Inicializa el índice de escritura en la primera posición |
+| DIFF_CHAR_SEND | Verifica que el módulo de control se encuentre listo y configura el envió al LCD del carácter correspondiente |
+| DIFF_CHAR_WAIT | Una vez completado el envío del carácter anterior, verifica el que no se haya terminado de escribir la palabra y selecciona el siguiente carácter a enviar. En caso de haber terminado se continua con el flujo de la partida |
+| SELECT_WAIT | Espera el inicio de la partida o el cambio de selección de dificultad |
+| GAME_CLEAR_SEND | Verifica que el módulo de control se encuentre listo y limpia la pantalla |
+| GAME_CLEAR_WAIT | Espera a que finalice la limpieza |
+| WORD_ADDR_SEND | Se coloca el cursor al inicio de la pantalla |
+| WORD_ADDR_WAIT | Se espera que esté listo el módulo de control, se selecciona el primer carácter y se coloca el cursor al inicio|
+| WORD_CHAR_SEND | Se verifica que el LCD no este ocupado y se envía el carácter correspondiente|
+| WORD_CHAR_WAIT | Espera que se escriba el carácter y repite el proceso anterior hasta finalizar la escritura |
+| ATT_ADDR_SEND | Envía el cursor a la segunda línea de la LCD |
+| ATT_ADDR_WAIT | Espera que se finalice la tarea anterior |
+| ATT_CHAR_SEND | Envía los caracteres para indicar la cantidad de intentos restantes |
+| ATT_CHAR_WAIT | Espera que se finalice la tarea anterior y la repite hasta finalizar la escritura |
+| PLAY_WAIT| Se esperan nuevas letras, fallos o el fin de la partida |
+| RESULT_CLEAR_SEND | Limpia la pantalla |
+| RESULT_CLEAR_WAIT | Se espera la finalización del proceso anterior y se selecciona un nuevo primer carácter |
+| RESULT_CHAR_SEND | Se envía el resultado de la partida carácter por carácter |
+| RESULT_CHAR_WAIT | Espera que se finalice la tarea anterior y la repite hasta finalizar la escritura |
+| RESULT_WAIT | Espera y regresa a la pantalla de dificultad |
+
+<div align="center">
+<img src="./Imagenes/FSM TOP.png" width="500" height="500">
+</div>
+
+#### Nivel  1
+Objetivo: El subsistema de LCD debe recibir las entradas necesarias para cumplir con las funciones que permiten mostrar en la pantalla la dificultad, los intentos, los guiones, las letras acertadas y el resultado de la partida, en este nivel se consideran las entradas y salidas del subsistema como se muestra en la imagen.
+Explicación general: para la primera etapa de elección de dificultad el sistema general deberá proveer al subsistema LCD con el estado actual de la dificultad, esto para que el periférico puede mostrar las opciones a elegir. Una vez inicia el juego es necesaria información relacionada a la palabra como el largo y las letras acertadas, también se recibe información de los fallos que cometa el usuario y una señal de inicio. Finalmente, se le comunica al subsistema si el usuario gano o perdió. Esta información deberá ser procesada y convertida en un bus de datos o comandos para ser enviado al LCD junto a un pulso de enable. 
+
+<div align="center">
+<img src="./Imagenes/Primer nivel LCD.png" width="500" height="500">
 </div>
 
 #### Nivel 2
-
-#### Nivel 3
+Para el nivel 2 se muestra un diagrama simplificado del nivel 3 puesto que sus objetivos y construcción es similar. 
 
 <div align="center">
-<img src="./Imagenes/NIVEL 3.png" width="500" height="500">
+<img src="./Imagenes/Segundo nivel LCD.png" width="500" height="500">
+</div>
+
+#### Nivel 3
+Objetivo: el subsistema debe procesar las entradas de forma que se sea capaz de mostrar opciones de juego, el flujo de este y el resultado final, además, se solicita que este tenga una interfaz de 32 bits que permita la lectura y escritura según el registro seleccionado. El subsistema también debe lograr respetar los tiempos de ejecución de instrucciones de la pantalla.
+Explicación general: este subsistema esta conformado por varias máquinas de estados las cuales se explican más a detalle en la sección anterior. En conjunto se encargan del procesamiento y control de los datos para que puedan ser enviados a la salida, ordenando y coordinando la información que necesita la LCD para procesar datos e instrucciones. 
+
+<div align="center">
+<img src="./Imagenes/Tercer nivel LCD.png" width="500" height="500">
+</div>
+
+#### Nivel 4
+##### Modulo Top
+Este modulo se encarga de recibir las entradas del sistema del juego y pasarlas a la pantalla carácter por carácter, también se encarga de enviar la información al controlador para que se realice posteriormente la espera entre instrucciones. Este modulo decide cuando y que se realizara posteriormente, ya que sigue el flujo del juego desde la selección de dificultada hasta la muestra de resultado.
+##### Modulo FSM
+El siguiente modulo se encarga de la inicialización por instrucciones del dispositivo y de realizar la espera entre instrucciones, además de que las recibe desde la interfaz y las envía al modulo top. Este puede recibir instrucciones de borrado de pantalla, escritura y regresar el cursor a inicio, también inicializa los contadores para que generen una señal enable. Al ser una FSM su diseño se baso principalmente en las instrucciones y funcionalidad mostrada en la hoja de datos.
+##### Modulo control 
+Este modulo se encarga de empaquetar la información en registros de 32 bits para ser enviados a la interfaz, además de controlar sus entradas como el addr o el write_enable. Este recibe las instrucciones o datos del modulo top y coordina su almacenamiento en los registros. También se comunica con la interfaz para cerciorarse de que se puede continuar con la escritura.
+##### Módulo interfaz
+Este módulo permite la lectura y escritura de los registros para conectar el módulo de control con la FSM. Para realizar estas operaciones se utiliza la dirección addr, que permite seleccionar el registro correspondiente, mientras que las señales de escritura y los datos determinan la operación que se desea realizar.
+
+<div align="center">
+<img src="./Imagenes/Tercer nivel LCD.png" width="500" height="500">
 </div>
 
 ### Botones
