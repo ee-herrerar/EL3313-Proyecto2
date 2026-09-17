@@ -42,6 +42,9 @@ El subsistema de juego es el encargado de manejar la lógica principal del juego
 |   LetraIncorrecta    |                 La letra presionada no se encuentra en la palabra.                 |      Se procesa la letra, desde mostrar la letra en el LCD en los espacios que corresponde hasta bajar el numero de Fallos.      |                   ComprobarLetras                   |
 |    GameOver(LOSE)    |     El jugador se ha quedado sin Fallos disponibles o se ha acabado el tiempo      |     Se tiene que permanecer en este estado por 3 segundos, seguido de las acciones correspondientes al estado GameOver(LOSE)     |                 SeleccionDificultad                 |
 |    GameOver(WIN)     |           El jugador ha logrado adivinar todas las letras de la palabra            |     Se tiene que permanecer en este estado por 3 segundos, seguido de las acciones correspondientes al estado GameOver(WIN)      |                 SeleccionDificultad                 |
+
+---
+
 #### ROM
 
 Entradas: word_index[5:0]
@@ -49,6 +52,8 @@ Entradas: word_index[5:0]
 Salidas: palabra[95:0] y largo[4:0]
 
 Módulo encargado de almacenar las 50 palabras disponibles para el juego. A partir del índice recibido selecciona una palabra y entrega tanto sus caracteres como su longitud. Cada palabra utiliza un ancho fijo de 96 bits, suficiente para almacenar hasta 12 caracteres ASCII de 8 bits.
+
+---
 
 #### LFSR
 
@@ -58,6 +63,8 @@ Salidas: op[5:0]
 
 Módulo encargado de generar una secuencia pseudoaleatoria de 6 bits utilizada para variar la selección de palabras entre partidas. El registro avanza en cada ciclo de reloj utilizando una realimentación obtenida mediante una operación XOR entre dos bits del registro. Durante el reinicio se utiliza una semilla distinta de cero para evitar que el LFSR permanezca bloqueado en el estado 000000.
 
+---
+
 #### Random_index
 
 Entradas: clk, rst, enable y hardmode
@@ -65,6 +72,8 @@ Entradas: clk, rst, enable y hardmode
 Salidas: word_index[5:0]
 
 Módulo encargado de convertir el valor generado por el LFSR en un índice válido para la ROM. Cuando enable se activa, selecciona y almacena un nuevo índice. En modo fácil permite seleccionar cualquiera de las 50 palabras disponibles, mientras que en modo difícil utiliza únicamente los índices correspondientes a palabras con más de cinco caracteres.
+
+---
 
 #### LetraVali
 
@@ -76,6 +85,8 @@ Módulo encargado de comparar la letra recibida con cada una de las posiciones v
 
 Por ejemplo, para la palabra CASA, si se recibe la letra A, las posiciones correspondientes a ambas letras A son activadas en coincidencias, permitiendo revelar simultáneamente todas sus apariciones en el LCD.
 
+---
+
 #### Timer
 
 Entradas: clk, rst, hardmode, GameOn y Active
@@ -86,9 +97,12 @@ Módulo encargado de controlar el tiempo disponible durante cada partida. Al com
 
 Cuando el tiempo llega a cero activa TimeOut, señal utilizada por la máquina de estados para finalizar la partida con una derrota. TimerS contiene el tiempo restante y también es utilizado por el sistema de periféricos para mostrarlo en los displays de 7 segmentos.
 
+
 ### UART
 #### Comunicación Serial (UART)
 Para establecer el enlace de comunicación bidireccional entre la FPGA y la PC (a través de la aplicación en Python), el sistema utiliza un periférico UART de 32 bits mapeado a memoria. Este bloque integra los núcleos de transmisión (`UART_tx`) y recepción (`UART_rx`) en VHDL con una interfaz SystemVerilog estandarizada.
+
+---
 
 #### UART_GENERADOR_BAUDIOS
 Entradas: clk y reset
@@ -96,6 +110,8 @@ Entradas: clk y reset
 Salidas: s_tick
 
 Genera el pulso utilizado para la temporalización de los módulos de transmisión y recepción de la UART, utilizando específicamente 115200 baudios. 
+
+---
 
 #### UART_RX
 
@@ -105,6 +121,8 @@ Salidas: dout[7:0] y rx_done_tick
 
 Recibe la trama de la UART y convierte los datos serializado es el byte paralelo de 8 bits, de esta manera, detecta el bit de inicio y realiza el muestreo de los 8 bits de la información y verifica cuando se recibe el bit que indica la parada. 
 
+---
+
 #### UART_TX
 
 Entradas: clk, reset, tx_start, s_tick y din[7:0]
@@ -112,6 +130,8 @@ Entradas: clk, reset, tx_start, s_tick y din[7:0]
 Salidas: tx y tx_done_tick
 
 Recibe el byte paralelo de 8 bits y se encarga de convertirlo en la trama serializada.
+
+---
 
 #### UART_WRAPPER
 
@@ -121,6 +141,8 @@ Salida: tx, dout[7:0], rx_done_tick y tx_done_tick
 
 Es el encargado de integrar los 3 modulos anteriores en un solo dispositivo, proporcionando lo necesario para que se pueda realizar correctamente el enlace serial.
 
+---
+
 #### UART_PERIPH
 
 Entradas: clk, reset, rx, addr, write_data y write_enable
@@ -128,6 +150,8 @@ Entradas: clk, reset, rx, addr, write_data y write_enable
 Salidas: tx y read_data
 
 Proporciona una interfaz de registros para el control de la UART
+
+---
 
 #### UART_RX_CONTROL
 
@@ -137,6 +161,8 @@ Salidas: LetraUART[7:0] y NuevaLetra
 
 Consulta de manera constante el periférico de la UART para determinar si se recibió un nuevo byte. Cuando se recibe un dato nuevo, se almacena, limpia la flag y genera un pulso de aviso.
 
+---
+
 #### UART_TX_CONTROL
 
 Entradas: clk, reset, data_byte y interfaz UART
@@ -144,6 +170,8 @@ Entradas: clk, reset, data_byte y interfaz UART
 Salidas: Interfaz UART y done
 
 Convierte el identificador de mensaje en una secuencia de caracteres ASCII y los envia
+
+---
 
 #### UART_MM_ARBITER
 
@@ -153,7 +181,9 @@ Salidas: Interfaz de UART_PERIPH
 
 Controla el acceso compartido a UART_PERIPH, ademas de determinar si el bus deberia ser utilizado por el RX o TX/
 
-UART_EVENTOS
+---
+
+#### UART_EVENTOS
 
 Entrdas: clk, reset, GameOn, hardmode, Fallos[2:0], LetrasReveladas[11:0], GameWin, GameLose y mensaje_busy
 
@@ -161,7 +191,9 @@ Salidas: mensaje_start y mensaje_id[2:0]
 
 Detecta los eventos que el mismo juego produce y determina que mensaje tiene que ser enviado a la aplicación de la PC.
 
-UART_CONTROL
+---
+
+#### UART_CONTROL
 
 Entradas: clk, reset, rx, mensaje_start y mensaje_id[2:0]
 
@@ -169,6 +201,7 @@ Salidas: tx, LetraUART[7:0], NuevaLetra, mensaje_busy y mensaje_done
 
 Modulo principal de todo el sistema UART, el cual integra todo el resto de los módulos en un solo dispositivo, permitiendo asi la comunicación entre la PC y la FPGA
 
+---
 
 ## Subsistema Periféricos
 ---
