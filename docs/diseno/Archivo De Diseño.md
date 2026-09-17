@@ -250,6 +250,61 @@ El módulo permite que solo un tono esté activo a la vez y devuelve la salida `
 
 El módulo `status_led` utiliza una entrada de dos bits (`game_state`) para indicar visualmente el estado general del juego mediante un banco de 16 LEDs. En el estado de selección de modo se enciende `led[0]`, durante la partida se enciende `led[1]` y al mostrar el resultado final se enciende `led[2]`. Los demás LEDs permanecen apagados.
 
+<img width="496" height="236" alt="Captura de pantalla 2026-09-16 182409" src="https://github.com/user-attachments/assets/2a6d204c-6a2b-467c-ad1d-08e918388c09" />
+
+Diagrama tercer nivel buzzer.
+
+
+------------------------------------------------------------
+
+<img width="270" height="222" alt="Captura de pantalla 2026-09-16 182416" src="https://github.com/user-attachments/assets/8265f647-53bd-4cef-90d6-a7638f443d8c" />
+
+Diagrama terecer nivel leds.
+
+------------------------------------------------------------
+
+A continuación se procede con el diagrama de cuarto nivel del buzzer:
+
+A) Nombre del módulo: buzzer_driver
+
+B) Diagrama modular:
+<img width="496" height="236" alt="Captura de pantalla 2026-09-16 182409" src="https://github.com/user-attachments/assets/2a6d204c-6a2b-467c-ad1d-08e918388c09" />
+
+
+c) Objetivo: Generar una onda cuadrada de frecuencia y duración distintas según el evento del juego recibido (letra correcta, letra incorrecta, victoria, derrota), para alimentar un buzzer pasivo.
+
+D) Entradas: 
+
+| Señal | Ancho | Descripcion |
+| :---: | :---: | :---: |
+| clk | 1 | 	Reloj de sistema|
+| rst | 1 | reset sincrono |
+| correct_pulse, incorrect_pulse | 1 | 	pulso de 1 ciclo desde la fsm control |
+| win_pulse, lose_pulse | 1 | 	Dpulso de 1 ciclo desde la fsm control |
+
+
+E) Salidas: 
+
+| Señal | Ancho | Descripcion |
+| :---: | :---: | :---: |
+| buzzer_pwm  | 1 | 	Onda cuadrada hacia el buzzer pasivo  |
+
+
+F) Relación con otros módulos: Los 4 pulsos de entrada provienen de la FSM de control principal, generados en el mismo ciclo en que se valida una letra o se determina el resultado de la partida. No depende de ningún otro periférico local.
+
+
+G) Explicación de funcionamiento: El selector de evento decide, con prioridad fija (correct > incorrect > win > lose), cuál frecuencia (semiperiodo) y duración cargar; también reinicia el tono si llega un nuevo evento mientras uno anterior aún suena. El contador de duración cuenta hacia atrás desde el valor cargado y, al llegar a cero, desactiva el tono. En paralelo, el contador de ciclos cuenta hasta el semiperiodo cargado y, al alcanzarlo, dispara al biestable de salida para que alterne buzzer_pwm, generando así la onda cuadrada de la frecuencia deseada
+
+
+------------------------------------------------------------
+
+A continuación se procede con el diagrama de cuarto nivel del led:
+
+a) Nombre del módulo:
+
+
+
+
 ### LCD
 El subsistema LCD se encarga de mostrara mensajes en la pantalla. Durante la primera etapa de selección de dificultad, alterna entre los mensajes de “FACIL” y “DIFICIL”, permitiendo al usuario elegir entre ambas opciones, al finalizar esta etapa el subsistema se encarga de escribir guiones bajos que representen cada letra de la palabra escogida pseudoaleatoriamente. En la segunda etapa el juego ya ha empezado, aquí el sistema recibe una letra, la cantidad de veces que se repite y cada una de sus ubicaciones, de esta forma se va formando la palara conforme el usuario acierte. Finalmente, una vez el juego ha terminado, se le indica al usuario si perdió o gano.
 
