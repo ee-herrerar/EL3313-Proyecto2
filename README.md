@@ -7,4 +7,5 @@ Recreación de "Ahorcado", versión en juego electrónico vía FPGA / PC por enl
 
 ## Demostraciones
 [Demostración y explicación del código utilizado](https://youtu.be/8PXXbEcNKPs)
+
 [Demostración funcional de la FPGA y periféricos en juego](https://youtu.be/hoVYSvu8pEc)
