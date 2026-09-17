@@ -401,25 +401,25 @@ La siguiente máquina de estados se encarga de escribir la información que le e
 #### Máquina de estado Top
 La siguiente maquina de estados es la que se encarga de la coordinación de todas las secciones del subsistema LCD. A continuación se muestra una breve descripción de los estados: 
 
-| ESTADO | Función | 
-| :---------------------- :| :---- | 
+| ESTADO | Función |
+| :--- | :--- |
 | WAIT_INIT | Esta sección espera la finalización de la inicialización por instrucciones e inicia |
 | DIFF_CLEAR_SEND | Verifica que el módulo de control se encuentre listo y limpia la pantalla |
 | DIFF_CLEAR_WAIT | Inicializa el índice de escritura en la primera posición |
-| DIFF_CHAR_SEND | Verifica que el módulo de control se encuentre listo y configura el envió al LCD del carácter correspondiente |
-| DIFF_CHAR_WAIT | Una vez completado el envío del carácter anterior, verifica el que no se haya terminado de escribir la palabra y selecciona el siguiente carácter a enviar. En caso de haber terminado se continua con el flujo de la partida |
+| DIFF_CHAR_SEND | Verifica que el módulo de control se encuentre listo y configura el envío al LCD del carácter correspondiente |
+| DIFF_CHAR_WAIT | Una vez completado el envío del carácter anterior, verifica que no se haya terminado de escribir la palabra y selecciona el siguiente carácter a enviar. En caso de haber terminado, se continúa con el flujo de la partida |
 | SELECT_WAIT | Espera el inicio de la partida o el cambio de selección de dificultad |
 | GAME_CLEAR_SEND | Verifica que el módulo de control se encuentre listo y limpia la pantalla |
 | GAME_CLEAR_WAIT | Espera a que finalice la limpieza |
 | WORD_ADDR_SEND | Se coloca el cursor al inicio de la pantalla |
-| WORD_ADDR_WAIT | Se espera que esté listo el módulo de control, se selecciona el primer carácter y se coloca el cursor al inicio|
-| WORD_CHAR_SEND | Se verifica que el LCD no este ocupado y se envía el carácter correspondiente|
+| WORD_ADDR_WAIT | Se espera que esté listo el módulo de control, se selecciona el primer carácter y se coloca el cursor al inicio |
+| WORD_CHAR_SEND | Se verifica que el LCD no esté ocupado y se envía el carácter correspondiente |
 | WORD_CHAR_WAIT | Espera que se escriba el carácter y repite el proceso anterior hasta finalizar la escritura |
-| ATT_ADDR_SEND | Envía el cursor a la segunda línea de la LCD |
+| ATT_ADDR_SEND | Envía el cursor a la segunda línea del LCD |
 | ATT_ADDR_WAIT | Espera que se finalice la tarea anterior |
 | ATT_CHAR_SEND | Envía los caracteres para indicar la cantidad de intentos restantes |
 | ATT_CHAR_WAIT | Espera que se finalice la tarea anterior y la repite hasta finalizar la escritura |
-| PLAY_WAIT| Se esperan nuevas letras, fallos o el fin de la partida |
+| PLAY_WAIT | Se esperan nuevas letras, fallos o el fin de la partida |
 | RESULT_CLEAR_SEND | Limpia la pantalla |
 | RESULT_CLEAR_WAIT | Se espera la finalización del proceso anterior y se selecciona un nuevo primer carácter |
 | RESULT_CHAR_SEND | Se envía el resultado de la partida carácter por carácter |
