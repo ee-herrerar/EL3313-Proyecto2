@@ -25,8 +25,9 @@ Entradas: letra seleccionada por el jugador y datos recibidos mediante UART desd
 Salidas: letra validada enviada hacia la FPGA e información mostrada al jugador
 
 Aplicación desarrollada en Python encargada de recibir las letras ingresadas por el jugador, verificar que correspondan a una entrada válida y enviarlas hacia la FPGA mediante la comunicación UART. También recibe desde la FPGA mensajes relacionados con el desarrollo de la partida, como la dificultad seleccionada, si una letra fue correcta o incorrecta y el resultado final del juego, mostrando esta información al jugador.
+
 ---
----
+
 El subsistema de juego es el encargado de manejar la lógica principal del juego, además de gestionar la aplicación utilizada remotamente desde la PC. Este subsistema también se encarga de la comunicación entre la FPGA y la PC App mediante el periférico UART, permitiendo el envío y recepción de información a través de una conexión física por cable.
 
 ### FSM del Juego
