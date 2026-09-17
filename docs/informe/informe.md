@@ -18,12 +18,14 @@ Plataforma FPGA: Digilent Basys 3
 #### LCD
 #### Indicadores (leds, displays y buzzer)
 
-## Simulación autoverificable
+## Resultados
 
-### TOP_GLOBAL
+### Simulación autoverificable
+
+#### TOP_GLOBAL
 
 
-### TOP_LCD
+#### TOP_LCD
 
 ```text
 ========================================
@@ -96,7 +98,7 @@ TODAS LAS PRUEBAS DEL NUEVO TOP_LCD PASARON
 ========================================
 ```
 
-### TOP_PERI
+#### TOP_PERI
 
 ```text
 ========================================
@@ -138,9 +140,7 @@ TODAS LAS PRUEBAS DE TOP_PERI PASARON
 ========================================
 ```
 
-### Top_Juego
-
-## Resultados
+#### Top_Juego
 
 
 
