@@ -123,7 +123,7 @@ El Timer es el módulo encargado de controlar el tiempo disponible durante cada 
 Mientras la partida se encuentre activa, el módulo disminuye el tiempo restante una vez por segundo. Cuando el contador llega a cero, genera una señal Timeout, la cual es enviada a la FSM para indicar que la partida debe finalizar con una derrota. El valor del tiempo restante también se envía al controlador de los displays de 7 segmentos para ser mostrado al jugador.
 
 ### UART
-### Comunicación Serial (UART)
+#### Comunicación Serial (UART)
 Para establecer el enlace de comunicación bidireccional entre la FPGA y la PC (a través de la aplicación en Python), el sistema utiliza un periférico UART de 32 bits mapeado a memoria. Este bloque integra los núcleos de transmisión (`UART_tx`) y recepción (`UART_rx`) en VHDL con una interfaz SystemVerilog estandarizada.
 
 #### UART_GENERADOR_BAUDIOS
