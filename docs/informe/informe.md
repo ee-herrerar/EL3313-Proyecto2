@@ -71,6 +71,12 @@ El diseño para los módulos y maquinas de estado se realizo a base de la hoja d
 - LCD_PERIPH: Se encarga de escribir y leer registros, esto se realiza a partir de los índices de addr y el estado de write_enable.
 - LCD_CONTROL: este se encarga de comunicar a los demás módulos con el TOP, este empaqueta los datos en registros de 32 bits y los envía a la interfaz, además de que le permite al top saber cuando la LCD esta ocupada realizando una operación. 
 
+A continuación se muestra el diagrama de módulos: 
+
+<div align="center">
+<img src="./Imagenes/Tercer nivel LCD.png" width="500" height="500">
+</div>
+
 #### Indicadores (leds, displays y buzzer)
 
 1. Display de siete segmentos
