@@ -27,7 +27,40 @@ El proyecto se desarrolló siguiendo una metodología modular, dividiendo el sis
 
 ### Control de juego 
 ### Perifericos 
-#### Uarth
+
+#### Uart
+En este proyecto, la UART está organizada en varios módulos que separan responsabilidades y permiten una comunicación ordenada entre la FPGA y el entorno externo. 
+Algunos de los bloques funcionales más relevantes son:
+
+- UART_GENERADOR_BAUDIOS: genera la señal de temporización necesaria para muestrear cada bit de la trama serial con precisión.
+- UART_TX: módulo de transmisión, encargado de enviar secuencialmente los bits desde un dato paralelo.
+- UART_RX: módulo de recepción, encargado de capturar la secuencia serial y reconstruir el byte recibido.
+- UART_CONTROL: administra el flujo de datos, validaciones y el estado del intercambio.
+- UART_EVENTOS: detecta y centraliza eventos relevantes del sistema para su envío o interpretación.
+- UART_MENSAJE: formatea los mensajes o datos que se envían hacia la PC o desde la PC hacia la FPGA.
+- UART_MM_ARBITER: coordina el acceso a recursos compartidos en la comunicación serial, evitando conflictos entre varios módulos.
+- UART_PERIPH: encapsula la interfaz de la UART como periférico del sistema digital.
+- UART_WRAPPER: integra la UART dentro del diseño global, conectándola con el resto de módulos del proyecto.
+
+En conjunto, estos módulos permiten que el sistema de la Basys 3 actúe como un periférico serial capaz de:
+- recibir comandos del usuario,
+- enviar mensajes de estado,
+- reportar resultados del juego,
+- y actualizar variables internas de forma controlada.
+
+La aplicación en Python es la parte de control ubicada en la computadora, y su función principal es comunicar el usuario o el sistema operativo con la FPGA. En términos funcionales, la app hace lo siguiente:
+- Abre el puerto serial correspondiente a la Basys 3.
+- Configura parámetros varíos como lo hacen los módulos en FPGA.
+- Envía comandos o solicitudes a la FPGA relacionados al juego, dificultad y otros.
+- Lee datos recibidos desde la FPGA
+- Procesa la información y la muestra al usuario en una interfaz gráfica o consola.
+
+Desde la perspectiva de la FPGA, cada byte o cadena enviada desde Python es interpretado como una instrucción o un evento. 
+La UART recibe esos datos y el sistema digital los decodifica mediante estados internos.
+- una orden puede indicar que se debe iniciar una nueva partida,
+- un dato puede representar una dificultad seleccionada,
+- un mensaje puede indicar victoria, derrota o actualización de puntaje.
+
 #### LCD
 #### Indicadores (leds, displays y buzzer)
 
