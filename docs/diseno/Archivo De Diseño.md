@@ -295,12 +295,18 @@ F) Relación con otros módulos: Los 4 pulsos de entrada provienen de la FSM de 
 
 G) Explicación de funcionamiento: El selector de evento decide, con prioridad fija (correct > incorrect > win > lose), cuál frecuencia (semiperiodo) y duración cargar; también reinicia el tono si llega un nuevo evento mientras uno anterior aún suena. El contador de duración cuenta hacia atrás desde el valor cargado y, al llegar a cero, desactiva el tono. En paralelo, el contador de ciclos cuenta hasta el semiperiodo cargado y, al alcanzarlo, dispara al biestable de salida para que alterne buzzer_pwm, generando así la onda cuadrada de la frecuencia deseada
 
+H9 Diseño: Este bloque no tiene lógica combinacional de diseño propio que amerite una tabla de verdad: es un conjunto de contadores y comparadores numéricos parametrizados. El diseño se documenta en su lugar mediante las fórmulas usadas para calcular los parámetros de cada tono a partir de la frecuencia y duración deseadas:
+
+semiperiodo (ciclos) = CLK_FREQ_HZ / (2 × frecuencia_Hz)
+duración   (ciclos) = CLK_FREQ_HZ × (duración_ms / 1000)
+
+<img width="596" height="225" alt="Captura de pantalla 2026-09-16 183833" src="https://github.com/user-attachments/assets/5baf08f6-7f79-41f5-9917-4cdd32c70d73" />
 
 ------------------------------------------------------------
 
 A continuación se procede con el diagrama de cuarto nivel del led:
 
-a) Nombre del módulo:
+a) Nombre del módulo: status_led
 
 
 
