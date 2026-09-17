@@ -332,11 +332,11 @@ e) salidas:
 
 f) Relación con otros módulos: game_state proviene directamente de la FSM de control principal del juego (Ahorcado); es un bloque puramente de despliegue, sin retroalimentación hacia el resto del sistema.
 
-
-> g) Explicación de funcionamiento:  tres comparadores combinacionales evalúan en paralelo si game_state es igual a cada uno de los 3 códigos válidos, y cada resultado se conecta directamente a un bit distinto de led. Al ser mutuamente excluyentes por construcción, nunca hay más de un LED encendido a la vez.
+g) Explicación de funcionamiento:  tres comparadores combinacionales evalúan en paralelo si game_state es igual a cada uno de los 3 códigos válidos, y cada resultado se conecta directamente a un bit distinto de led. Al ser mutuamente excluyentes por construcción, nunca hay más de un LED encendido a la vez.
 
 
 h) 
+
 <img width="597" height="219" alt="Captura de pantalla 2026-09-16 184250" src="https://github.com/user-attachments/assets/d98fee16-a407-42de-88bc-314821eea4b0" />
 
 
