@@ -87,6 +87,107 @@ En la FPGA, cada LED puede ser controlado mediante una salida digital del diseñ
 
 #### TOP_GLOBAL
 
+```text
+========================================
+PRUEBA FINAL TOP_GLOBAL ACTUALIZADO
+========================================
+
+PRUEBA INICIALIZACION
+
+PASS - LCD muestra FACIL
+PASS - LED seleccion de modo
+
+========================================
+PARTIDA FACIL - CASA
+========================================
+PASS - Mensaje UART ID 0 correcto
+PASS - LCD palabra ----
+PASS - LCD muestra INTENTOS:6
+PASS - Modo facil activo
+PASS - Palabra CASA cargada
+PASS - Timer facil = 60
+PASS - LED partida activa
+
+========================================
+PRUEBA LETRA A
+========================================
+PASS - LCD palabra -A-A
+PASS - Mensaje UART ID 2 correcto
+PASS - LCD muestra INTENTOS:6
+PASS - A revela ambas posiciones
+
+========================================
+PRUEBA LETRA Z
+========================================
+PASS - LCD palabra -A-A
+PASS - LCD muestra INTENTOS:5
+PASS - Mensaje UART ID 3 correcto
+PASS - Fallos = 1
+
+========================================
+PRUEBA LETRA C
+========================================
+PASS - LCD palabra CA-A
+PASS - Mensaje UART ID 2 correcto
+PASS - LCD muestra INTENTOS:5
+PASS - Queda una letra
+
+========================================
+PRUEBA VICTORIA
+========================================
+PASS - LCD palabra CASA
+PASS - Mensaje UART ID 2 correcto
+PASS - LCD muestra INTENTOS:5
+PASS - Mensaje UART ID 4 correcto
+PASS - LCD muestra GANASTE
+PASS - GameWin activo
+PASS - LED resultado victoria
+PASS - Contador de victorias = 01
+
+========================================
+PRUEBA MODO DIFICIL
+========================================
+PASS - Hardmode seleccionado
+PASS - LCD muestra DIFICIL
+PASS - Mensaje UART ID 1 correcto
+PASS - Palabra dificil de 6 letras
+PASS - Timer dificil = 45
+
+========================================
+PRUEBA DERROTA POR 6 FALLOS
+========================================
+PASS - LCD muestra FACIL
+PASS - Mensaje UART ID 0 correcto
+PASS - LCD palabra ----
+PASS - LCD muestra INTENTOS:6
+PASS - LCD palabra ----
+PASS - LCD muestra INTENTOS:5
+PASS - Mensaje UART ID 3 correcto
+PASS - LCD palabra ----
+PASS - LCD muestra INTENTOS:4
+PASS - Mensaje UART ID 3 correcto
+PASS - LCD palabra ----
+PASS - LCD muestra INTENTOS:3
+PASS - Mensaje UART ID 3 correcto
+PASS - LCD palabra ----
+PASS - LCD muestra INTENTOS:2
+PASS - Mensaje UART ID 3 correcto
+PASS - LCD palabra ----
+PASS - LCD muestra INTENTOS:1
+PASS - Mensaje UART ID 3 correcto
+PASS - LCD palabra ----
+PASS - LCD muestra INTENTOS:0
+PASS - Mensaje UART ID 3 correcto
+PASS - Mensaje UART ID 5 correcto
+PASS - LCD muestra PERDISTE
+PASS - Fallos = 6
+PASS - GameLose activo
+PASS - LED resultado derrota
+
+========================================
+TODAS LAS PRUEBAS DE TOP_GLOBAL PASARON
+========================================
+```
 
 #### TOP_LCD
 
@@ -205,6 +306,68 @@ TODAS LAS PRUEBAS DE TOP_PERI PASARON
 
 #### Top_Juego
 
+```text
+----------------------------------
+PRUEBA RESET
+----------------------------------
+PASS - Estado inicial
+PASS - Fallos = 0
+PASS - GameOver desactivado
+
+----------------------------------
+PRUEBA ROM
+----------------------------------
+PASS - Largo CASA = 4
+PASS - Palabra = CASA
+
+----------------------------------
+PRUEBA DIFICULTAD
+----------------------------------
+PASS - Hardmode = 1
+PASS - Hardmode = 0
+
+----------------------------------
+PRUEBA INICIO
+----------------------------------
+PASS - Estado LlamadaPalabra
+PASS - Estado PalabraActiva
+PASS - LetrasRestantes = 4
+PASS - Timer = 60
+
+----------------------------------
+PRUEBA LETRA A
+----------------------------------
+PASS - A es correcta
+PASS - Quedan 2 letras
+PASS - Dos A reveladas
+PASS - Regresa a PalabraActiva
+
+----------------------------------
+PRUEBA LETRA REPETIDA
+----------------------------------
+PASS - A repetida ignorada
+PASS - No cambia LetrasRestantes
+PASS - No aumenta Fallos
+
+----------------------------------
+PRUEBA LETRA Z
+----------------------------------
+PASS - Z es incorrecta
+PASS - Fallos = 1
+PASS - Regresa a PalabraActiva
+
+----------------------------------
+PRUEBA VICTORIA
+----------------------------------
+PASS - C deja 1 letra
+PASS - S completa CASA
+PASS - Estado GameOverWIN
+PASS - GameWin = 1
+
+==================================
+TODAS LAS PRUEBAS PASARON
+==================================
+```
 
 
 ## Conclusión
