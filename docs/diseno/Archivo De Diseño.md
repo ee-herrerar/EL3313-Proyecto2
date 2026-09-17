@@ -42,85 +42,49 @@ El subsistema de juego es el encargado de manejar la lógica principal del juego
 |   LetraIncorrecta    |                 La letra presionada no se encuentra en la palabra.                 |      Se procesa la letra, desde mostrar la letra en el LCD en los espacios que corresponde hasta bajar el numero de Fallos.      |                   ComprobarLetras                   |
 |    GameOver(LOSE)    |     El jugador se ha quedado sin Fallos disponibles o se ha acabado el tiempo      |     Se tiene que permanecer en este estado por 3 segundos, seguido de las acciones correspondientes al estado GameOver(LOSE)     |                 SeleccionDificultad                 |
 |    GameOver(WIN)     |           El jugador ha logrado adivinar todas las letras de la palabra            |     Se tiene que permanecer en este estado por 3 segundos, seguido de las acciones correspondientes al estado GameOver(WIN)      |                 SeleccionDificultad                 |
-### ROM
----
-Este módulo es el encargado de almacenar las palabras que se utilizarán durante la partida. A partir de un índice de entrada, el módulo entrega la palabra correspondiente junto con su longitud, permitiendo que esta sea utilizada como la palabra por adivinar. Las palabras se almacenan utilizando un ancho fijo capaz de representar hasta 12 caracteres.
-Para el almacenamiento de las palabras se necesita considerar los siguientes datos:
-- Índice: Estos bits son el ID de cada una de las palabras, debido a que son 50 palabras, se puede deducir que se necesitaran 6 bits:
-  $$2^6 = 64$$
-  Esto corresponde a la cantidad suficiente para almacenar todas. Por lo que se tendría un índice de tipo $$\texttt{indice[5:0]}$$
-- Palabra: Cada una de las palabras tienen una cantidad de letras distintas, sin embargo, se sabe que el máximo que puede tener cada una de las letras es de 12 caracteres, y además se sabe que cada uno de estos caracteres tiene formato ASCII, por lo que se ocupan 8 bits de representación: 
-  $$12 \text{ caracteres} \times 8 \text{ bits} = 96 \text{ bits}$$
-  Se tiene entonces: 
-  $$\texttt{palabra[95:0]}$$
-- Longitud: Este dato no es estrictamente necesario, sin embargo, ayuda a descifrar cuantas letras tiene realmente la palabra, ya que si por ejemplo, la palabra es "HOLA", el resto de bits tiene que ser rellenado con algo más, por lo que se puede enviar un dato adicional que indica que solamente las 4 primeras letras se usan.
-   $$\texttt{largo[4:0]}$$
+#### ROM
 
-### LSFR
+Entradas: word_index[5:0]
 
-### Selector de Índice vía LFSR
+Salidas: palabra[95:0] y largo[4:0]
 
-Para garantizar una selección pseudoaleatoria y no determinista de las palabras del banco (ROM) en cada partida, el subsistema incluye un generador pseudoaleatorio basado en un Registro de Desplazamiento con Retroalimentación Lineal (*Linear Feedback Shift Register*, LFSR) junto con un módulo de adecuación de rango para limitar los valores generados.
+Módulo encargado de almacenar las 50 palabras disponibles para el juego. A partir del índice recibido selecciona una palabra y entrega tanto sus caracteres como su longitud. Cada palabra utiliza un ancho fijo de 96 bits, suficiente para almacenar hasta 12 caracteres ASCII de 8 bits.
 
-![Generador Palabras Aleatorias](Imagenes/generador_palabras_aleatorias-diagrama.png)
+#### LFSR
 
-#### 1. Generador LFSR (`Lfsr.sv`)
+Entradas: clk y rst
 
-El módulo `Lfsr` implementa un registro de 6 bits (`OUTPUT_BITS = 6`) utilizando una topología Fibonacci. Genera una secuencia pseudoaleatoria de longitud máxima ($2^6 - 1 = 63$ estados distintos) antes de repetirse.
+Salidas: op[5:0]
 
-* **Ecuación de Retroalimentación:**
-  El bit de realimentación (`feedback`) se calcula mediante la operación XOR entre los bits más significativos del registro:
-  $$\text{feedback} = \text{lfsr reg}[5] \oplus \text{lfsr reg}[4]$$
+Módulo encargado de generar una secuencia pseudoaleatoria de 6 bits utilizada para variar la selección de palabras entre partidas. El registro avanza en cada ciclo de reloj utilizando una realimentación obtenida mediante una operación XOR entre dos bits del registro. Durante el reinicio se utiliza una semilla distinta de cero para evitar que el LFSR permanezca bloqueado en el estado 000000.
 
-* **Prevención de Estado Nulo:**
-  Un LFSR basado en compuertas XOR colapsa permanentemente si entra al estado `6'b000000`. Para evitar esto, ante la señal de reinicio (`rst`), el registro se inicializa en la semilla distinta de cero `6'b000001` (`0x01`).
----
+#### Random_index
 
-#### 2. Módulo Limitador de Rango (`Random_index.sv`)
+Entradas: clk, rst, enable y hardmode
 
-Dado que el banco de palabras en la memoria ROM contiene un máximo de 50 elementos (índices válidos del `0` al `49`) y el LFSR de 6 bits abarca valores del `1` al `63`, se aplica una técnica de **rechazo de muestras** (*rejection sampling*):
+Salidas: word_index[5:0]
 
-1. El LFSR opera continuamente ciclo a ciclo en segundo plano.
-2. Al activarse la señal de habilitación (`enable`) proveniente de la FSM principal al cambiar de estado, el módulo evalúa si la salida instantánea `op` del LFSR se encuentra dentro del rango válido (`op < 50`).
-3. Si el valor es menor a 50, se captura y actualiza el valor de salida `word_index`. Si el valor es mayor o igual a 50 (entre 50 y 63), la lectura se descarta en ese ciclo hasta que el LFSR avance a un número menor a 50.
+Módulo encargado de convertir el valor generado por el LFSR en un índice válido para la ROM. Cuando enable se activa, selecciona y almacena un nuevo índice. En modo fácil permite seleccionar cualquiera de las 50 palabras disponibles, mientras que en modo difícil utiliza únicamente los índices correspondientes a palabras con más de cinco caracteres.
 
----
-Este módulo se encarga de generar un número pseudoaleatorio que se utilizará para seleccionar cuál de las palabras almacenadas en el banco ROM será utilizada durante el juego. Para generar estos valores, el módulo utiliza un registro de desplazamiento y una operación XOR entre ciertos bits previamente definidos, conocidos como _taps_.
+#### LetraVali
 
-Si se tiene, por ejemplo, el siguiente número de 6 bits:
+Entradas: palabra[95:0], largo[4:0] y letra[7:0]
 
-```
-0 1 1 0 0 1
-```
+Salidas: acierto y coincidencias[11:0]
 
-se realiza un desplazamiento hacia la derecha, obteniendo:
+Módulo encargado de comparar la letra recibida con cada una de las posiciones válidas de la palabra seleccionada. La salida acierto indica si la letra aparece al menos una vez, mientras que coincidencias[11:0] indica específicamente las posiciones donde fue encontrada.
 
-```
-? 0 1 1 0 0
-```
+Por ejemplo, para la palabra CASA, si se recibe la letra A, las posiciones correspondientes a ambas letras A son activadas en coincidencias, permitiendo revelar simultáneamente todas sus apariciones en el LCD.
 
-El nuevo bit se obtiene mediante una operación XOR entre los _taps_ definidos para el LFSR. Si los bits seleccionados tienen valores 0 y 1, entonces:
+#### Timer
 
-0 v 1 = 1
+Entradas: clk, rst, hardmode, GameOn y Active
 
-por lo tanto, el nuevo valor del registro sería:
+Salidas: TimerS[5:0] y TimeOut
 
-```
-1 0 1 1 0 0
-```
+Módulo encargado de controlar el tiempo disponible durante cada partida. Al comenzar una nueva partida carga 60 segundos en modo fácil o 45 segundos en modo difícil. Mientras Active se mantenga activo, realiza la cuenta regresiva una vez por segundo.
 
-Este proceso se repite cada vez que el LFSR avanza, generando así una secuencia de números pseudoaleatorios que posteriormente se utilizan como índices para seleccionar una palabra del banco ROM.
-
-
-### Validación Letras
----
-El sistema de validación de letras es el encargado de, al recibir la letra `input` del jugador, comparar esta letra con las letras de la palabra elegida. Si hay un acierto por parte del jugador, el modulo utilizara sus `outputs` para dar 2 datos, tanto la información de que hubo un acierto de manera general, como la cantidad de aciertos que se dieron. El mismo dato que indica si hubo un acierto es utilizado para indicar si hubo un fallo a la hora de elegir la letra, siendo un 1 para un acierto y un 0 para un fallo. 
-El numero de coincidencias es encargado de indicar cuales letras fueron acertadas, por ejemplo, si se tiene la palabra `C A S A ...`  el numero que saldría como `output` seria si se elige la letra A, se obtendría `0 1 0 1 ...`. Lo cual se puede usar para poder elegir las letras que tendrán que ser mostradas en el LCD.
-
-### Timer
----
-El Timer es el módulo encargado de controlar el tiempo disponible durante cada partida. Una vez que la palabra ha sido seleccionada y la partida entra en estado activo, el temporizador comienza una cuenta regresiva desde un valor determinado por la dificultad seleccionada Se tienen sugeridos un tiempo de 60 segundos para el modo fácil, y 45 para el modo difícil
-Mientras la partida se encuentre activa, el módulo disminuye el tiempo restante una vez por segundo. Cuando el contador llega a cero, genera una señal Timeout, la cual es enviada a la FSM para indicar que la partida debe finalizar con una derrota. El valor del tiempo restante también se envía al controlador de los displays de 7 segmentos para ser mostrado al jugador.
+Cuando el tiempo llega a cero activa TimeOut, señal utilizada por la máquina de estados para finalizar la partida con una derrota. TimerS contiene el tiempo restante y también es utilizado por el sistema de periféricos para mostrarlo en los displays de 7 segmentos.
 
 ### UART
 #### Comunicación Serial (UART)
