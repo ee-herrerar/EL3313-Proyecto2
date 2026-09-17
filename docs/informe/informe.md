@@ -74,7 +74,7 @@ El diseño para los módulos y maquinas de estado se realizo a base de la hoja d
 A continuación se muestra el diagrama de módulos: 
 
 <div align="center">
-<img src="./Imagenes/Tercer nivel LCD.png" width="500" height="500">
+<img src="./docs/diseno/Imagenes/Tercer nivel LCD.png" width="500" height="500">
 </div>
 
 #### Indicadores (leds, displays y buzzer)
