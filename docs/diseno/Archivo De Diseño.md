@@ -442,7 +442,7 @@ Explicación general: para la primera etapa de elección de dificultad el sistem
 Para el nivel 2 se muestra un diagrama simplificado del nivel 3 puesto que sus objetivos y construcción es similar. 
 
 <div align="center">
-<img src="./Imagenes/Segundo nivel LCD.png" width="500" height="500">
+<img src="./Imagenes/Segundo nivel LCD.png" width="500" height="700">
 </div>
 
 #### Nivel 3
@@ -450,7 +450,7 @@ Objetivo: el subsistema debe procesar las entradas de forma que se sea capaz de 
 Explicación general: este subsistema esta conformado por varias máquinas de estados las cuales se explican más a detalle en la sección anterior. En conjunto se encargan del procesamiento y control de los datos para que puedan ser enviados a la salida, ordenando y coordinando la información que necesita la LCD para procesar datos e instrucciones. 
 
 <div align="center">
-<img src="./Imagenes/Tercer nivel LCD.png" width="500" height="500">
+<img src="./Imagenes/Tercer nivel LCD.png" width="500" height="700">
 </div>
 
 #### Nivel 4
