@@ -298,6 +298,8 @@ G) Explicación de funcionamiento: El selector de evento decide, con prioridad f
 H9 Diseño: Este bloque no tiene lógica combinacional de diseño propio que amerite una tabla de verdad: es un conjunto de contadores y comparadores numéricos parametrizados. El diseño se documenta en su lugar mediante las fórmulas usadas para calcular los parámetros de cada tono a partir de la frecuencia y duración deseadas:
 
 semiperiodo (ciclos) = CLK_FREQ_HZ / (2 × frecuencia_Hz)
+
+
 duración   (ciclos) = CLK_FREQ_HZ × (duración_ms / 1000)
 
 <img width="596" height="225" alt="Captura de pantalla 2026-09-16 183833" src="https://github.com/user-attachments/assets/5baf08f6-7f79-41f5-9917-4cdd32c70d73" />
@@ -308,6 +310,34 @@ A continuación se procede con el diagrama de cuarto nivel del led:
 
 a) Nombre del módulo: status_led
 
+b) Diagrama modular:
+
+<img width="270" height="222" alt="Captura de pantalla 2026-09-16 182416" src="https://github.com/user-attachments/assets/8265f647-53bd-4cef-90d6-a7638f443d8c" />
+
+c) objetivo: indicar, mediante un LED distinto y de forma mutuamente excluyente, en cuál de las 3 fases se encuentra el sistema: selección de modo, partida activa, o resultado final.
+
+d) entradas:
+
+| Señal | Ancho | Descripcion |
+| :---: | :---: | :---: |
+| game_state | 2 | Código de fase actual del juego |
+
+
+e) salidas: 
+
+| Señal | Ancho | Descripcion |
+| :---: | :---: | :---: |
+| led[15:0] | 16 | 		LEDs de la Basys3; solo led[2:0] se usan  |
+
+
+f) Relación con otros módulos: game_state proviene directamente de la FSM de control principal del juego (Ahorcado); es un bloque puramente de despliegue, sin retroalimentación hacia el resto del sistema.
+
+
+> g) Explicación de funcionamiento:  tres comparadores combinacionales evalúan en paralelo si game_state es igual a cada uno de los 3 códigos válidos, y cada resultado se conecta directamente a un bit distinto de led. Al ser mutuamente excluyentes por construcción, nunca hay más de un LED encendido a la vez.
+
+
+h) 
+<img width="597" height="219" alt="Captura de pantalla 2026-09-16 184250" src="https://github.com/user-attachments/assets/d98fee16-a407-42de-88bc-314821eea4b0" />
 
 
 
