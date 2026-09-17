@@ -194,14 +194,47 @@ Asignacion sugerida (documentar en el informe si se cambia):
 Cada entrada de digito es un valor BCD de 0 a 9 (4 bits).
 seg[6:0] = {g,f,e,d,c,b,a}, activo en bajo (patron estandar deanodo comun). dp se deja siempre apagado (activo en bajo -> '1').
 
+<img width="1026" height="415" alt="Captura de pantalla 2026-09-16 180624" src="https://github.com/user-attachments/assets/baa5b6f9-7490-4831-9d48-fcf6db43c812" />
+Diagrama tercer nivel
 
-<img width="1280" height="630" alt="WhatsApp Image 2026-09-07 at 3 45 21 PM" src="https://github.com/user-attachments/assets/3e9517b9-213d-44e4-9abf-a0ce508eec2a" />
-Diagrama primer nivel modulo de displays.
+---------------------------------------------------------
+A continuación se procede con el diagrama de cuarto nivel:
+
+a) Nombre del módulo: seven_seg_mux
+
+b) Diagrama modular:
+
+<img width="1026" height="415" alt="Captura de pantalla 2026-09-16 180624" src="https://github.com/user-attachments/assets/baa5b6f9-7490-4831-9d48-fcf6db43c812" />
 
 
-<img width="792" height="868" alt="WhatsApp Image 2026-09-07 at 4 33 52 PM" src="https://github.com/user-attachments/assets/3a2b81a6-8f41-40d9-af5b-09e8561c9397" />
+C) Objetivo: Multiplexar 4 dígitos BCD sobre el único bus de segmentos y las 4 líneas de ánodo de los displays físicos de la Basys3, refrescando a una tasa suficientemente alta para que el ojo humano perciba los 4 dígitos encendidos de forma simultánea.
 
-Diagrama segundo nivel modulo de displays.
+D) Entradas: 
+
+| Señal | Ancho | Descripcion |
+| :---: | :---: | :---: |
+| clk | 1 | 	Reloj de sistema|
+| rst | 1 | reset sincrono |
+| times_tens, times_ones | 4 | 	Dígitos BCD del tiempo restante |
+| wins_tens, wins_ones | 4 | 	Dígitos BCD de las partidas ganadas |
+
+E) Salidas: 
+
+| Señal | Ancho | Descripcion |
+| :---: | :---: | :---: |
+| seg[6:0] | 7 | 	Patrón de segmentos activo en bajo |
+| dp | 1 | Punto decimal (siempre apagado) |
+| an[3:0] | 4 | Selector de ánodo activo en bajo |
+
+f) Relación con otros módulos: Recibe sus 4 entradas BCD directamente de la FSM de control principal (temporizador de cuenta regresiva y contador de partidas ganadas). No depende de ningún otro periférico local; es un bloque de solo salida hacia el hardware físico de la tarjeta.
+
+g) Explicación de funcionamiento: Un contador de refresco genera un pulso de habilitación (tick_en) cada CLK_FREQ_HZ / REFRESH_HZ ciclos. Ese pulso avanza un contador módulo 4 (digit_sel) que recorre cíclicamente los 4 dígitos. Según el valor de digit_sel, un multiplexor 4:1 selecciona cuál de los 4 valores BCD mostrar y, en paralelo, un decodificador binario a one-hot activa la línea de ánodo correspondiente. El valor BCD seleccionado pasa a un decodificador combinacional que lo traduce al patrón de 7 segmentos.
+
+h) Diseño: Este es el único bloque puramente combinacional de diseño propio del módulo (el resto son contadores y un multiplexor estándar). Segmentos activos en bajo, orden seg = {g,f,e,d,c,b,a}:
+
+<img width="415" height="483" alt="Captura de pantalla 2026-09-16 182059" src="https://github.com/user-attachments/assets/bc659bbe-f4e5-4cb4-a1a1-466ded5da806" />
+
+No requiere simplificación booleana adicional: es una ROM combinacional de 10 entradas válidas, implementada como case en SystemVerilog; el sintetizador la mapea directamente a LUTs.
 
 ### Sonido Y LEDs
 ---
